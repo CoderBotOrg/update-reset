@@ -79,5 +79,5 @@ Change init by adding init=/sbin/init_overlay to /boot/cmdline.txt.
 
 ### TODO
 Factory reset should reset boot partition too.  
-Outdated rootfs and updated kernel could be a problem?
+Outdated rootfs and updated kernel could be a problem?  
 apt shouldn't update /boot/cmdline.txt
