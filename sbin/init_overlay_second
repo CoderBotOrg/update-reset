@@ -1,0 +1,32 @@
+#!/bin/bash
+source /etc/init_overlay.conf
+export PATH
+
+(( $DEBUG == 1 )) && set -o xtrace
+
+flush_log(){
+        echo "writing log to files from second..."
+	tee < $TMP_LOG2 -a ${LOG_FILES2[@]} ${LAST_LOGS2[@]} > /dev/null
+}
+
+fail(){
+        echo -e "$1"
+        (( $# > 1 )) && ${@:2}
+        return 1
+}
+
+mount --move $ROMMPOINT/proc /proc || fail "ERROR: could not mount move proc"
+[ -f /proc/mounts ] || mount -t proc proc /proc
+mount --move $ROMMPOINT/dev /dev || mount -t devtmpfs devtmpfs /dev || fail "ERROR: could not mount (move) dev"
+[ -d /dev/fd ] || ln -s /proc/self/fd /dev/fd || fail "ERROR: probem with /dev/fd, nedded for log"
+mount --move $ROMMPOINT/run /run || mount -t tmpfs tmpfs /run || fail "ERROR: problem mounting tmp"
+
+exec > >(tee -a $TMP_LOG2) 2>&1
+
+echo "starting overlay second stage..."
+
+ROMMPOINT=${ROMMPOINT#/}
+perl -lane "(\$submount) = \$F[1] =~ /\/$ROMMPOINT(\/[^\/]+)/; print \"/$ROMMPOINT\$submount \$submount\" if \$submount" < /proc/mounts | sort | uniq | xargs -n 2 mount --move || fail "ERROR: could not mount move .."
+echo "I'm going to call real init"
+flush_log
+exec /sbin/init || fail "ERROR: cound not exec init" exec /bin/bash

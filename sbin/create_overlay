@@ -1,0 +1,19 @@
+#!/bin/bash
+
+OVERDEV=${1:-/dev/mmcblk0p3}
+OVERFS=${2:-ext4}
+OVERLABEL=${3:-overlay}
+OVERMPOINT=${4:-/mnt} #temp mount point for creating dirs
+
+fail(){
+	echo $1
+	return 1
+}
+
+wipefs -a $OVERDEV || fail "ERROR: could not wipefs overlay" || exit 2
+mkfs -t $OVERFS -L $OVERLABEL $OVERDEV || fail "ERROR: could not mkfs overlay" || exit 3
+mount $OVERDEV $OVERMPOINT || fail "ERROR: could not mount overlay for creating dirs" || exit 4
+mkdir $OVERMPOINT/upper $OVERMPOINT/work || fail "ERROR: could not mkdirs overlay" || exit 5
+umount $OVERMPOINT || fail "ERROR: could not umount" || exit 1
+echo "SUCCESS in creating overlay"
+
