@@ -64,5 +64,15 @@ sudo umount /mnt
 sudo echo "/dev/mmcblk0p3	/overlay	ext4	defaults,noatime,nofail	  0	  3" >> /etc/fstab
 ```
 
+#### Create mountpoints:
+Overlay:
+```
+sudo mkdir /overlay
+```
+ROM:
+```
+sudo mkdir /rom
+```
+
 ### Set init
 Change init by adding init=/sbin/init_overlay to /boot/cmdline.txt.
