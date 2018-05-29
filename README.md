@@ -59,6 +59,10 @@ sudo mount /dev/mmcblk0p3 /mnt
 sudo mkdir /mnt/upper /mnt/work
 sudo umount /mnt
 ```
+#### Add overlay to fstab:
+```
+sudo echo "/dev/mmcblk0p3	/overlay	ext4	defaults,noatime,nofail	  0	  3" >> /etc/fstab
+```
 
 ### Set init
 Change init by adding init=/sbin/init_overlay to /boot/cmdline.txt.
