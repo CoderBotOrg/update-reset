@@ -1,4 +1,5 @@
 #!/bin/bash
+#import config
 source /etc/init_overlay.conf
 export PATH
 
@@ -15,6 +16,7 @@ fail(){
         return 1
 }
 
+#move needed mounts
 mount --move $ROMMPOINT/proc /proc || fail "ERROR: could not mount move proc"
 [ -f /proc/mounts ] || mount -t proc proc /proc
 mount --move $ROMMPOINT/dev /dev || mount -t devtmpfs devtmpfs /dev || fail "ERROR: could not mount (move) dev"
@@ -25,8 +27,10 @@ exec > >(tee -a $TMP_LOG2) 2>&1
 
 echo "starting overlay second stage..."
 
+#move all mounts under rom
 ROMMPOINT=${ROMMPOINT#/}
 perl -lane "(\$submount) = \$F[1] =~ /\/$ROMMPOINT(\/[^\/]+)/; print \"/$ROMMPOINT\$submount \$submount\" if \$submount" < /proc/mounts | sort | uniq | xargs -n 2 mount --move || fail "ERROR: could not mount move .."
+
 echo "I'm going to call real init"
 flush_log
-exec /sbin/init || fail "ERROR: cound not exec init" exec /bin/bash
+exec $REAL_INIT || fail "ERROR: cound not exec init" exec /bin/bash
