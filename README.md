@@ -11,6 +11,16 @@ Overlay is mounted by an init script. It mounts upper file-system, merge rootfs 
 If the button is pressed it cleans the upper fs.
 
 ## Setup
+### Install scripts
+```
+sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/sbin/create_overlay -o /sbin/create_overlay
+sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/sbin/init_overlay -o /sbin/init_overlay
+sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/sbin/init_overlay_second -o /sbin/init_overlay_second
+sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/etc/init_overlay.conf -o /etc/init_overlay.conf
+
+sudo chmod +x /sbin/init_overlay /sbin/init_overlay_second /sbin/create_overlay
+```
+
 ### Creation of the upper partition
 #### Partition Setup
 ##### Check fs usage with:  
