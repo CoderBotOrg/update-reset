@@ -10,10 +10,15 @@ fail(){
 	return 1
 }
 
+#delete old fs
 wipefs -a $OVERDEV || fail "ERROR: could not wipefs overlay" || exit 2
+
+#create new fs
 mkfs -t $OVERFS -L $OVERLABEL $OVERDEV || fail "ERROR: could not mkfs overlay" || exit 3
+
+#mount to create needed dirs
 mount $OVERDEV $OVERMPOINT || fail "ERROR: could not mount overlay for creating dirs" || exit 4
 mkdir $OVERMPOINT/upper $OVERMPOINT/work || fail "ERROR: could not mkdirs overlay" || exit 5
 umount $OVERMPOINT || fail "ERROR: could not umount" || exit 1
-echo "SUCCESS in creating overlay"
 
+echo "SUCCESS in creating overlay"
