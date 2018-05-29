@@ -1,15 +1,19 @@
 #!/bin/bash
+
+#"import" config
 source /etc/init_overlay.conf
 export PATH
 
-(( $DEBUG == 1 )) && set -o xtrace
+(( $DEBUG == 1 )) && set -o xtrace #print all comands executed
 
+#save temp_log to persistent_log_files
 flush_log(){
 	echo "writing log to files..."
 	tee < $TMP_LOG -a ${LOG_FILES[@]} > /dev/null
 	tee < $TMP_LOG ${LAST_LOGS[@]} > /dev/null
 }
 
+#fallback to real init (systemd)
 init_fallback(){
 	fail "falling back to normal init..."
 	flush_log
@@ -18,44 +22,65 @@ init_fallback(){
 
 fail(){
         echo -e "$1"
-        (( $# > 1 )) && ${@:2}
+        (( $# > 1 )) && ${@:2} #run args 2,...
         return 1
 }
 
+#mount need /proc
 [ -f /proc/mounts ] || mount -t proc proc /proc || fail "ERROR: could not mount proc" init_fallback
+
+#log need /dev/fd
 grep "^/dev" /proc/mounts || mount -t devtmpfs devtmpfs /dev
 [ -d /dev/fd ] || ln -s /proc/self/fd /dev/fd || fail "ERROR: probem with /dev/fd, nedded for log"
+
+#tmpfiles in /run
 grep "^/run" /proc/mounts || mount -t tmpfs tmpfs /run
 
+#redirect stdout and stderr to log_files
 exec > >(tee -a $TMP_LOG) 2>&1
 
 echo "starting overlay boot..."
 
+#gpio need sys
 [ -d /sys/class ] || mount -t sysfs sysfs /sys || fail "ERROR: sys not mounted, necessary for gpio" init_fallback
+
+#setup button
 echo $BUTTON > /sys/class/gpio/export || fail "ERROR: could not init button" init_fallback
 echo "in" > /sys/class/gpio/gpio$BUTTON/direction || fail "ERROR: could not set button input" init_fallback
 
+#check if button pressed (when 0)
 if (( $(cat /sys/class/gpio/gpio$BUTTON/value) == 0 ))
 then
 	echo "resetting... :o"
 	/sbin/create_overlay
 fi
+#unset button
 echo $BUTTON > /sys/class/gpio/unexport || fail "ERROR: could not remove button from sys class"
 
+#mount needed partition
 for partition in $MOUNTPARTS
 do
 	awk -v part=$partition '$2 == part { printf "-t %s -o %s %s %s\n", $3, $4, $1, $2 }' /etc/fstab | xargs mount
 done
 
+#tmpfs for doing stuff
 mount -t tmpfs tmpfs $TMPMPOINT || fail "ERROR: could not create tmpfs on $TMPMPOINT" init_fallback
 modprobe overlay || fail "ERROR: missing overlay kernel module" init_fallback
+#check dirs
 [ -d $OVERMPOINT/upper ] || mkdir $OVERMPOINT/upper
 [ -d $OVERMPOINT/work ] || mkdir $OVERMPOINT/work
+
+#mount overlay
 mount -t overlay overlay -o lowerdir=/,upperdir=$OVERMPOINT/upper/,workdir=$OVERMPOINT/work/ $TMPMPOINT || fail "ERROR: could not mount overlay" init_fallback
+#check dirs
 [ -d ${TMPMPOINT}${ROMMPOINT} ] || mkdir ${TMPMPOINT}${ROMMPOINT} || fail "ERROR: could not create rom dir"
 [ -d ${TMPMPOINT}${OVERMPOINT} ] || mkdir ${TMPMPOINT}${OVERMPOINT} || fail "ERROR: could not create overlay dir"
+
 cd $TMPMPOINT || fail "ERROR: could not cd newroot" init_fallback
 echo "OK, I'm going to pivot root"
+
+#save temp_log to persistent_log
 flush_log
+
 pivot_root . ${ROMMPOINT#/} || fail "ERROR: could not pivot_root" /bin/bash #la sostituzione toglie la / del rommpoint
 exec chroot . $INIT_SECOND || fail "ERROR chroot" exec /bin/bash
