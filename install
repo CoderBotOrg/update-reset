@@ -19,3 +19,10 @@ chmod +x ${DESTDIR}/sbin/init_overlay
 chmod +x ${DESTDIR}/sbin/init_overlay_second
 chmod +x ${DESTDIR}/sbin/create_overlay
 #chmod +x ${DESTDIR}bin/tar_sig
+
+if grep "init=..*" /boot/cmdline.txt > /dev/null
+then
+    sed -i "s-init=[^ ]*-init=/sbin/init_overlay-" /boot/cmdline.txt
+else
+    sed -i 's-$- init=/sbin/init_overlay-' /boot/cmdline.txt
+fi

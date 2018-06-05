@@ -19,3 +19,5 @@ rm_if_exist ${DESTDIR}/etc/coderbot/boot.tar.xz
 rm_if_exist ${DESTDIR}/etc/coderbot/boot.sig
 rm_if_exist ${DESTDIR}/etc/coderbot/coderbot.pub
 rmdir_if_exist ${DESTDIR}/etc/coderbot
+
+sed -i 's- init=/sbin/init_overlay--' /boot/cmdline.txt
