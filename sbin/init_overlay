@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #"import" config
-source /etc/init_overlay.conf
+source /etc/coderbot/init_overlay.conf
 export PATH
 
 (( $DEBUG == 1 )) && set -o xtrace #print all comands executed
@@ -53,6 +53,7 @@ if (( $(cat /sys/class/gpio/gpio$BUTTON/value) == 0 ))
 then
 	echo "resetting... :o"
 	/sbin/create_overlay
+	/sbin/restore_boot
 fi
 #unset button
 echo $BUTTON > /sys/class/gpio/unexport || fail "ERROR: could not remove button from sys class"

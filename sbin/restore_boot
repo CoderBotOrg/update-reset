@@ -1,0 +1,35 @@
+#!/bin/bash
+# restore the boot partition from a backup and a signature
+#
+#
+MOUNTPOINT=${4:-/boot}
+BACKUPFILE=${1:-/etc/coderbot/boot.tar.xz}
+BACKUPSIG=${2:-/etc/coderbot/boot.sig}
+KEYRING=${5:-/etc/coderbot/coderbot.pub}
+DEVICE=${3:-/dev/mmcblk0p1}
+LABEL=${6:-boot}
+FAT_SIZE=32
+
+fail(){
+	echo $1
+	exit 1
+}
+
+verify(){
+	gpg --no-default-keyring --keyring $KEYRING --verify $BACKUPSIG $BACKUPFILE || fail "ERROR: could not verify"
+}
+
+do_restore(){
+	umount $DEVICE
+	wipefs -a $DEVICE || fail "ERROR: could not wipefs"
+	mkfs.vfat -F $FAT_SIZE -n $LABEL $DEVICE || fail "ERROR: could not mkfs"
+	mount $DEVICE $MOUNTPOINT || fail "ERROR: could not mount"
+	tar xfJ $BACKUPFILE -C $MOUNTPOINT --no-same-owner || fail "ERROR: could not restore backup"
+}
+
+[ -f $BACKUPFILE ] || fail "ERROR: $BACKUPFILE File not Found"
+[ -f $BACKUPSIG ] || fail "ERROR: $BACKUPSIG File not Found"
+[ -f $KEYRING ] || fail "ERROR: $KEYRING File not Found"
+
+verify
+do_restore
