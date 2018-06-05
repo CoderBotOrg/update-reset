@@ -13,12 +13,16 @@ If the button is pressed it cleans the upper fs.
 ## Setup
 ### Install scripts
 ```
-sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/sbin/create_overlay -o /sbin/create_overlay
-sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/sbin/init_overlay -o /sbin/init_overlay
-sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/sbin/init_overlay_second -o /sbin/init_overlay_second
-sudo curl -L https://raw.githubusercontent.com/CoderBotOrg/overlay-factory-reset/master/etc/init_overlay.conf -o /etc/init_overlay.conf
+git clone https://github.com/CoderBotOrg/overlay-factory-reset
+cd overlay-factory-reset
+sudo make install
+```
 
-sudo chmod +x /sbin/init_overlay /sbin/init_overlay_second /sbin/create_overlay
+### Uninstall scripts
+```
+git clone https://github.com/CoderBotOrg/overlay-factory-reset
+cd overlay-factory-reset
+sudo make uninstall
 ```
 
 ### Creation of the upper partition
@@ -87,7 +91,13 @@ sudo mkdir /rom
 ### Set init
 Change init by adding init=/sbin/init_overlay to /boot/cmdline.txt.
 
+### Restore boot partition
+To be correctly restored boot partition should be backed up in /etc/coderbot/boot.tar.xz with a sigfile /etc/coderbot/boot.sig (you can use bin/tar-sig).  
+/sbin/restore_boot format boot partition, verify the backup with /etc/coderbot/coderbot.pub as keyring, then restore it to boot.  
+To export public key:
+```
+gpg --output coderbot.pub --export KEY
+```
+
 ### TODO
-Factory reset should reset boot partition too.  
-Outdated rootfs and updated kernel could be a problem?  
 apt shouldn't update /boot/cmdline.txt
