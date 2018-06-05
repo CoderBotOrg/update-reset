@@ -1,0 +1,21 @@
+#!/bin/bash
+DESTDIR=${1:-}
+
+rm_if_exist(){
+    [ -f $1 ] && rm $1
+}
+
+rmdir_if_exist(){
+    [ -d $1 ] && rmdir $1
+}
+
+rm_if_exist ${DESTDIR}/sbin/restore_boot
+rm_if_exist ${DESTDIR}/sbin/init_overlay
+rm_if_exist ${DESTDIR}/sbin/init_overlay_second
+rm_if_exist ${DESTDIR}/sbin/create_overlay
+rm_if_exist ${DESTDIR}/bin/tar_sig
+rm_if_exist ${DESTDIR}/etc/coderbot/init_overlay.conf
+rm_if_exist ${DESTDIR}/etc/coderbot/boot.tar.xz
+rm_if_exist ${DESTDIR}/etc/coderbot/boot.sig
+rm_if_exist ${DESTDIR}/etc/coderbot/coderbot.pub
+rmdir_if_exist ${DESTDIR}/etc/coderbot

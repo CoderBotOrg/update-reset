@@ -15,14 +15,14 @@ If the button is pressed it cleans the upper fs.
 ```
 git clone https://github.com/CoderBotOrg/overlay-factory-reset
 cd overlay-factory-reset
-sudo make install
+sudo ./install
 ```
 
 ### Uninstall scripts
 ```
 git clone https://github.com/CoderBotOrg/overlay-factory-reset
 cd overlay-factory-reset
-sudo make uninstall
+sudo ./uninstall
 ```
 
 ### Creation of the upper partition
