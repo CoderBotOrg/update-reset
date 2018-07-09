@@ -104,6 +104,7 @@ To export public key:
 ```
 gpg --output coderbot.pub --export KEY
 ```
+Then put it in /etc/coderbot/coderbot.pub
 
 ### TODO
 apt shouldn't update /boot/cmdline.txt
