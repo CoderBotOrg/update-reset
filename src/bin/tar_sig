@@ -4,20 +4,22 @@
 #
 
 usage() {
-	echo "backup_sign BACKUP_NAME [DEFAULT_KEY]"
+	echo "tar_sig BACKUP_NAME [DIR_TO_BACKUP] [DEFAULT_KEY]"
 	echo "backup current dir and creates DIRNAME.tar.xz and a DIRNAME.tar.xz.sig"
-	exit 1
+	exit 0
 }
+
+[[ $1 == "-h" || $1 == "--help" ]] && usage
 
 fail() {
 	echo $1
 	exit 2
 }
 
-BACKUP_DIR=.
+BACKUP_DIR=${2:-.}
 FILENAME=${1}.tar.xz
 SIGNAME=${1}.sig
-DEF_KEY=$2
+DEF_KEY=$3
 
 do_tar(){
 	tar cfJv $FILENAME $BACKUP_DIR || fail "ERROR: could not create tar archive"
