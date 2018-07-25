@@ -65,7 +65,7 @@ sudo umount /mnt
 ```
 git clone https://github.com/CoderBotOrg/overlay-factory-reset
 cd overlay-factory-reset
-sudo make install
+sudo make install DESTDIR=/
 ```
 
 ### Enable overlay
@@ -102,7 +102,7 @@ Then put it in /etc/coderbot/coderbot.pub
 ```
 git clone https://github.com/CoderBotOrg/overlay-factory-reset
 cd overlay-factory-reset
-sudo make uninstall
+sudo make uninstall DESTDIR=/
 ```
 
 ### TODO
