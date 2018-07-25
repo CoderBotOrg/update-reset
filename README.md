@@ -11,26 +11,6 @@ Overlay is mounted by an init script. It mounts upper file-system, merge rootfs 
 If the button is pressed it cleans the upper fs.
 
 ## Setup
-### Install scripts
-```
-git clone https://github.com/CoderBotOrg/overlay-factory-reset
-cd overlay-factory-reset
-sudo make install
-```
-
-### Enable overlay
-Add this line to /boot/cmdline.txt
-```
-init=/sbin/init_overlay
-```
-
-### Uninstall scripts
-```
-git clone https://github.com/CoderBotOrg/overlay-factory-reset
-cd overlay-factory-reset
-sudo make uninstall
-```
-
 ### Creation of the upper partition
 #### Partition Setup
 ##### Check fs usage with:  
@@ -80,6 +60,15 @@ sudo mount /dev/mmcblk0p3 /mnt
 sudo mkdir /mnt/upper /mnt/work
 sudo umount /mnt
 ```
+### Boot raspberry pi
+### Install scripts
+```
+git clone https://github.com/CoderBotOrg/overlay-factory-reset
+cd overlay-factory-reset
+sudo make install
+```
+
+### Enable overlay
 #### Add overlay to fstab:
 ```
 sudo echo "/dev/mmcblk0p3	/overlay	ext4	defaults,noatime,nofail	  0	  3" >> /etc/fstab
@@ -106,6 +95,13 @@ To export public key:
 gpg --output coderbot.pub --export KEY
 ```
 Then put it in /etc/coderbot/coderbot.pub
+
+### Uninstall scripts
+```
+git clone https://github.com/CoderBotOrg/overlay-factory-reset
+cd overlay-factory-reset
+sudo make uninstall
+```
 
 ### TODO
 apt shouldn't update /boot/cmdline.txt
