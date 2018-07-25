@@ -84,8 +84,10 @@ ROM:
 sudo mkdir /rom
 ```
 
-### Set init
-Change init by adding init=/sbin/init_overlay to /boot/cmdline.txt.
+### Add this line to /boot/cmdline.txt
+```
+init=/sbin/init_overlay
+```
 
 ### Restore boot partition
 To be correctly restored boot partition should be backed up in /etc/coderbot/boot.tar.xz with a sigfile /etc/coderbot/boot.sig (you can use bin/tar-sig).  
