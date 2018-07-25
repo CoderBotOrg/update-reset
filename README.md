@@ -41,22 +41,23 @@ File system Dim. Usati Dispon. Uso% Montato su
 /dev/mmcblk0p1              42M   22M     20M  53% /boot  
 /dev/mmcblk0p2             6,3G  4,2G    2,1G  33% /  
 
-#### Resize /dev/mmcblk0p2 to 3G:
+#### Resize /dev/mmcblk0p2 filesystem to 3G:  
+```
+sudo e2fsck -f /dev/mmcblk0p2
+sudo resize2fs /dev/mmcblk0p2 3G
+```
+
+#### Resize /dev/mmcblk0p2 partition to 3G:
 ```
 sudo fdisk /dev/mmcblk0
 ```
-Type p to list partition  
+Type p to list partition, take note of /dev/mmcblk0p2's Start sector  
 Type d, then 2 to delete second partition  
 Type n, then p for primary, then 2 to recreate the second partition  
-Press ENTER to accept the first sector, then type +3G as last sector to obtain a 3GB fs  
+Insert old /dev/mmcblk0p2's Start sector, then type +3G as last sector to obtain a 3GB partition
+Do NOT remove fs signature  
 Type w to write changes  
 Type q to exit  
-
-#### Resize fs:  
-```
-sudo e2fsck -f /dev/mmcblk0p2
-sudo resize2fs /dev/mmcblk0p2
-```
 
 #### Create new partition:  
 ```
@@ -64,7 +65,7 @@ sudo fdisk /dev/mmcblk0
 ```
 Type p to list  
 Type n, then p, then 3 to create 3rd partition  
-Press ENTER twice to accept first and last sector  
+Choose first sector increasing by 1 /dev/mmcblk0p2's End sector, press ENTER twice to accept last sector  
 Type w  
 Type q  
 
