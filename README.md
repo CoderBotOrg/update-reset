@@ -69,9 +69,9 @@ sudo make install
 ```
 
 ### Enable overlay
-#### Add overlay to fstab:
+#### Add this line to /etc/fstab:
 ```
-sudo echo "/dev/mmcblk0p3	/overlay	ext4	defaults,noatime,nofail	  0	  3" >> /etc/fstab
+/dev/mmcblk0p3	/overlay	ext4	defaults,noatime,nofail	  0	  3
 ```
 
 #### Create mountpoints:
