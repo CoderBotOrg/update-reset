@@ -65,7 +65,7 @@ sudo fdisk /dev/mmcblk0
 ```
 Type p to list  
 Type n, then p, then 3 to create 3rd partition  
-Choose first sector increasing by 1 /dev/mmcblk0p2's End sector, press ENTER twice to accept last sector  
+Choose first sector increasing by 1 /dev/mmcblk0p2's End sector, press ENTER to accept last sector  
 Type w  
 Type q  
 
