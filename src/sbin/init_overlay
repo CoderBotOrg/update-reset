@@ -16,6 +16,7 @@ flush_log(){
 #fallback to real init (systemd)
 init_fallback(){
 	fail "falling back to normal init..."
+	sleep $SLEEP_REAL_INIT
 	flush_log
 	exec /sbin/init
 }
@@ -66,7 +67,7 @@ done
 
 #tmpfs for doing stuff
 mount -t tmpfs tmpfs $TMPMPOINT || fail "ERROR: could not create tmpfs on $TMPMPOINT" init_fallback
-modprobe overlay || fail "ERROR: missing overlay kernel module" init_fallback
+modprobe overlay || modprobe overlay -d $OVERMPOINT/upper || fail "ERROR: missing overlay kernel module" init_fallback
 #check dirs
 [ -d $OVERMPOINT/upper ] || mkdir $OVERMPOINT/upper
 [ -d $OVERMPOINT/work ] || mkdir $OVERMPOINT/work
