@@ -34,3 +34,11 @@ uninstall:
 	rm $(DESTDIR)etc/coderbot/boot.sig
 	rm $(DESTDIR)etc/coderbot/coderbot.pub
 	rmdir $(DESTDIR)etc/coderbot
+
+desktop:
+	@echo installing desktop
+	cp $(SRCDIR)bin/tar_sig $(DESTDIR)
+
+desktop-uninstall:
+	@echo uninstalling desktop
+	rm $(DESTDIR)tar_sig
