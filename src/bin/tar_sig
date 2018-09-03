@@ -4,12 +4,12 @@
 #
 
 usage() {
-	echo "tar_sig BACKUP_NAME [DIR_TO_BACKUP] [DEFAULT_KEY]"
+	echo "tar_sig BACKUP_NAME DIR_TO_BACKUP DEFAULT_KEY"
 	echo "backup current dir and creates DIRNAME.tar.xz and a DIRNAME.tar.xz.sig"
 	exit 0
 }
 
-[[ $1 == "-h" || $1 == "--help" ]] && usage
+(( $# < 0 )) || [[ $1 == "-h" || $1 == "--help" ]] && usage
 
 fail() {
 	echo $1
@@ -17,12 +17,15 @@ fail() {
 }
 
 BACKUP_DIR=${2:-.}
+
+[ -d $BACKUP_DIR ] || fail "ERROR: Directory not found: BACKUP_DIR: $BACKUP_DIR"
+
 FILENAME=${1}.tar.xz
 SIGNAME=${1}.sig
 DEF_KEY=$3
 
 do_tar(){
-	tar cfJv $FILENAME $BACKUP_DIR || fail "ERROR: could not create tar archive"
+	tar cfJv $FILENAME -C $BACKUP_DIR . || fail "ERROR: could not create tar archive"
 }
 
 do_sign(){
