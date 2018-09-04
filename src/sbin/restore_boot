@@ -2,6 +2,13 @@
 # restore the boot partition from a backup and a signature
 #
 #
+
+usage() {
+	echo "restore_boot [BACKUPFILE] [SIGNATURE] [DEVICE] [MOUNTPOINT] [KEYRING] [LABEL]"
+	echo "restore boot partition from a backup, verifying the signature if present"
+	exit 2
+}
+
 MOUNTPOINT=${4:-/boot}
 BACKUPFILE=${1:-/etc/coderbot/boot.tar.xz}
 BACKUPSIG=${2:-/etc/coderbot/boot.sig}
@@ -16,10 +23,14 @@ fail(){
 }
 
 verify(){
+	[ -f $KEYRING ] || fail "ERROR: File not Found KEYRING: $KEYRING"
 	gpg --no-default-keyring --keyring $KEYRING --verify $BACKUPSIG $BACKUPFILE || fail "ERROR: could not verify"
 }
 
 do_restore(){
+	ls $DEVICE > /dev/null 2>&1 || fail "ERROR: Device not found $DEVICE"
+	[ -d $MOUNTPOINT ] || fail "ERROR: Directory not found: MOUNTPOINT: $MOUNTPOINT"
+	[ -f $BACKUPFILE ] || fail "ERROR: File not found BACKUPFILE: $BACKUPFILE"
 	umount $DEVICE
 	wipefs -a $DEVICE || fail "ERROR: could not wipefs"
 	mkfs.vfat -F $FAT_SIZE -n $LABEL $DEVICE || fail "ERROR: could not mkfs"
@@ -31,5 +42,6 @@ do_restore(){
 [ -f $BACKUPSIG ] || fail "ERROR: $BACKUPSIG File not Found"
 [ -f $KEYRING ] || fail "ERROR: $KEYRING File not Found"
 
-verify
+#verify only if signature is present
+[ -f $BACKUPSIG ] && verify
 do_restore

@@ -69,12 +69,12 @@ sudo make install DESTDIR=/
 ```
 
 ### Enable overlay
-#### Add this line to /etc/fstab:
+#### Add this line to /etc/fstab or use enable_overlay:
 ```
 /dev/mmcblk0p3	/overlay	ext4	defaults,noatime,nofail	  0	  3
 ```
 
-#### Create mountpoints:
+#### Create mountpoints  or use enable_overlay:
 Overlay:
 ```
 sudo mkdir /overlay
@@ -84,14 +84,22 @@ ROM:
 sudo mkdir /rom
 ```
 
-### Add this line to /boot/cmdline.txt
+### Add this line to /boot/cmdline.txt  or use enable_overlay:
 ```
 init=/sbin/init_overlay
 ```
 
 ### Restore boot partition
-To be correctly restored boot partition should be backed up in /etc/coderbot/boot.tar.xz with a sigfile /etc/coderbot/boot.sig (you can use bin/tar-sig).  
-/sbin/restore_boot format boot partition, verify the backup with /etc/coderbot/coderbot.pub as keyring, then restore it to boot.  
+To be correctly restored boot partition should be backed up in /etc/coderbot/boot.tar.xz with a optional sigfile /etc/coderbot/boot.sig (you can use tar_sig from update).  
+Whitout signature:  
+```
+tar cfvJ /etc/coderbot/boot.tar.xz -C /boot .
+```
+or simply
+```
+backup_boot
+```
+/sbin/restore_boot formats boot partition, verify the backup signature (if present) with /etc/coderbot/coderbot.pub as keyring, then restore it to boot.  
 To export public key:
 ```
 gpg --output coderbot.pub --export KEY

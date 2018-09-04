@@ -1,0 +1,79 @@
+#!/bin/bash
+
+usage() {
+	echo "enable_overlay enable/disable [BACKUP_DIR]"
+	echo "enable or disable overlay booting, backups changed files in backup_dir (default /tmp)"
+	exit 2
+}
+
+fail(){
+	echo $1
+	exit 1
+}
+
+[[ "$1" == "-h" || "$1" == "--help" ]] && usage
+
+CONF=/etc/coderbot/init_overlay.conf
+DEVICE=${DEVICE:-/dev/mmcblk0p3}
+FSTYPE=${FSTYPE:-ext4}
+MOUNTOPTS=${MOUNTOPTS:-"defaults,noatime,nofail"}
+DUMP=${DUMP:-0}
+FSCK=${FSCK:-3}
+FSTAB=/etc/fstab
+CMDLINE=/boot/cmdline.txt
+INIT_OVERLAY='\/sbin\/init_overlay'
+REAL_INIT='\/sbin\/init'
+BACKUP_DIR={$2:-/tmp}
+
+[ -d $BACKUP_DIR ] || fail "ERROR: BACKUP_DIR $BACKUP_DIR not found."
+
+[ -f $CONF ] || fail "ERROR: file not found CONF_FILE: $CONF"
+source $CONF
+
+over_enable(){
+    #mountpoints
+    [ -d $OVERMPOINT ] || mkdir $OVERMPOINT || fail "ERROR: can't create overlay mountpoint: $OVERMPOINT"
+    [ -d $ROMMPOINT ] || mkdir $ROMMPOINT || fail "ERROR: can't create rom mountpoint: $ROMMPOINT"
+
+    #fstab
+    cp $FSTAB $BACKUP_DIR
+    if ! grep "^[^#]*$OVERMPOINT" $FSTAB
+    then
+        #add
+        echo "$DEVICE $OVERMPOINT $FSTYPE $MOUNTOPTS $DUMP $FSCK" >> $FSTAB
+    fi
+
+    #init
+    cp $CMDLINE $BACKUP_DIR
+    sed -i "s/init=\([^ \t]*\)/init=$INIT_OVERLAY/" $CMDLINE
+}
+
+over_disable(){
+    #should delte mountpoints ?
+#    if [ -d $OVERMPOINT ]
+#    then
+#        umount $OVERMPOINT
+#        rmdir $OVERMPOINT || fail "ERROR: can't create overlay mountpoint: $OVERMPOINT"
+#    fi
+#    if [ -d $ROMMPOINT ]
+#    then
+#        umount $ROMMPOINT
+#        rmdir $ROMMPOINT || fail "ERROR: can't create rom mountpoint: $ROMMPOINT"
+#    fi
+
+    #fstab
+    cp $FSTAB $BACKUP_DIR
+    sed -i "/^[^#]*$OVERMPOINT/d" $FSTAB
+
+    #init
+    cp $CMDLINE $BACKUP_DIR
+    sed -i "s/init=\([^ \t]*\)/init=$REAL_INIT/" $CMDLINE
+}
+
+
+if [ "$1" = "enable" ]
+then
+    over_enable
+if ["$1" = "disable"]
+then
+    over_disable

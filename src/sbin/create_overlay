@@ -1,5 +1,13 @@
 #!/bin/bash
 
+usage() {
+	echo "create_overlay [DEVICE] [FS] [LABEL] [MOUNTPOINT]"
+	echo "initializes overlay partition using MOUNTPOINT as temporary mountpoint"
+	exit 2
+}
+
+[[ $1 == "-h" || $1 == "--help" ]] && usage
+
 OVERDEV=${1:-/dev/mmcblk0p3}
 OVERFS=${2:-ext4}
 OVERLABEL=${3:-overlay}
