@@ -1,0 +1,37 @@
+#!/bin/bash
+
+usage() {
+	echo "merge_overlay [overlay_mount_point] [rom_mount_point]"
+	echo "merges upper filesystem with lower, then empty upper fs with create_overlay"
+	exit 2
+}
+
+fail(){
+	echo $1
+	exit 1
+}
+
+[[ $1 == "-h" || $1 == "--help" ]] && usage
+
+CONF=/etc/coderbot/init_overlay.conf
+source $CONF ||  fail "ERROR: file not found CONF_FILE: $CONF"
+
+OVERMPOINT=${OVERMPOINT:-$1}
+ROMMPOINT=${ROMMPOINT:-$2}
+REOPTS="rw,remount,rw"
+
+[ -d $OVERMPOINT ] || fail "ERROR: OVERMPOINT $OVERMPOINT directory not faound"
+[ -d $ROMMPOINT ] || fail "ERROR: ROMMPOINT $ROMMPOINT directory not faound"
+
+mount -o $REOPTS $ROMMPOINT || fail "ERROR: can't remount $ROMMPOINT rw"
+
+cd $OVERMPOINT
+REMOVED=`find . -perm 000 -type c -exec ls -lb {} \; | perl -lane 'if($F[4] == "0" && $F[5] == "0"){$out=join(" ", @F[9..$#F]); $out =~ s/^\.\///; print $out;}'`
+while read line
+do
+	rm -rf "$ROMMPOINT/$line" || fail "ERROR: can't remove $ROMMPOINT/$line"
+done <<< $REMOVED
+
+cp -a $OVERMPOINT/* $ROMMPOINT/ || fail "ERROR in copying files"
+
+create_overlay || fail "ERROR in creating new overlay"

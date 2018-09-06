@@ -19,6 +19,7 @@ fail(){
 }
 
 #delete old fs
+umount $OVERDEV
 wipefs -a $OVERDEV || fail "ERROR: could not wipefs overlay" || exit 2
 
 #create new fs

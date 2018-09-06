@@ -27,8 +27,7 @@ BACKUP_DIR={$2:-/tmp}
 
 [ -d $BACKUP_DIR ] || fail "ERROR: BACKUP_DIR $BACKUP_DIR not found."
 
-[ -f $CONF ] || fail "ERROR: file not found CONF_FILE: $CONF"
-source $CONF
+source $CONF ||  fail "ERROR: file not found CONF_FILE: $CONF"
 
 over_enable(){
     #mountpoints
@@ -46,6 +45,11 @@ over_enable(){
     #init
     cp $CMDLINE $BACKUP_DIR
     sed -i "s/init=\([^ \t]*\)/init=$INIT_OVERLAY/" $CMDLINE
+
+    #rw ro
+    sed -i "s/[ \t]r[ow][ \t\n]\|[ \t\n]r[ow]$\|^r[ow][ \t\n]/ /g" $CMDLINE  #remove
+    sed -i "s/[ \t]*$/ ro/" $CMDLINE
+
 }
 
 over_disable(){
@@ -68,6 +72,10 @@ over_disable(){
     #init
     cp $CMDLINE $BACKUP_DIR
     sed -i "s/init=\([^ \t]*\)/init=$REAL_INIT/" $CMDLINE
+
+    #rw ro
+    sed -i "s/[ \t]r[ow][ \t\n]\|[ \t\n]r[ow]$\|^r[ow][ \t\n]/ /g" $CMDLINE  #remove
+    sed -i "s/[ \t]*$/ rw/" $CMDLINE
 }
 
 
