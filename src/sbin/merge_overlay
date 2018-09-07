@@ -34,4 +34,20 @@ done <<< $REMOVED
 
 cp -a $OVERMPOINT/* $ROMMPOINT/ || fail "ERROR in copying files"
 
+#delete overlay and create new one
 create_overlay || fail "ERROR in creating new overlay"
+
+BACKUPFILE=${BACKUPFILE:-/etc/coderbot/boot.tar.xz}
+BACKUPSIG=${BACKUPSIG:-/etc/coderbot/boot.sig}
+
+[ -f $BACKUPFILE ] && mv $BACKUPFILE ${BACKUPFILE}.old || fail "ERROR: cant rename $BACKUPFILE"
+[ -f $BACKUPSIG ] && mv $BACKUPSIG ${BACKUPSIG}.old || fail "ERROR: cant rename $BACKUPSIG"
+
+restore_old_backup() {
+	[ -f  ${BACKUPFILE}.old ] && mv  ${BACKUPFILE}.old ${BACKUPFILE} || fail "ERROR: cant rename  ${BACKUPFILE}.old"
+	[ -f ${BACKUPSIG}.old ] && mv ${BACKUPSIG}.old ${BACKUPSIG} || fail "ERROR: cant rename ${BACKUPSIG}.old"
+	fail "ERROR: cant backup boot partition"
+}
+
+#backup existing boot partition
+backup_boot || restore_old_backup
