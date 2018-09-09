@@ -68,7 +68,7 @@ done
 
 #tmpfs for doing stuff
 mount -t tmpfs tmpfs $TMPMPOINT || fail "ERROR: could not create tmpfs on $TMPMPOINT" init_fallback
-modprobe overlay || modprobe overlay -d $OVERMPOINT/upper || fail "ERROR: missing overlay kernel module" init_fallback
+modprobe overlay > /dev/null 2>&1 || modprobe overlay -d $OVERMPOINT/upper > /dev/null 2>&1 || fail "ERROR: missing overlay kernel module" init_fallback
 #check dirs
 [ -d $OVERMPOINT/upper ] || mkdir $OVERMPOINT/upper
 [ -d $OVERMPOINT/work ] || mkdir $OVERMPOINT/work
