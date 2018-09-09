@@ -13,21 +13,25 @@ fail(){
 
 [[ "$1" == "-h" || "$1" == "--help" ]] && usage
 
+DEBUG=${DEBUG:-"false"}
+[ "$DEBUG" = "true" ] && set -o xtrace
+
 CONF=/etc/coderbot/init_overlay.conf
-DEVICE=${DEVICE:-/dev/mmcblk0p3}
 FSTYPE=${FSTYPE:-ext4}
 MOUNTOPTS=${MOUNTOPTS:-"defaults,noatime,nofail"}
 DUMP=${DUMP:-0}
 FSCK=${FSCK:-3}
 FSTAB=/etc/fstab
 CMDLINE=/boot/cmdline.txt
-INIT_OVERLAY='\/sbin\/init_overlay'
-REAL_INIT='\/sbin\/init'
-BACKUP_DIR={$2:-/tmp}
+INIT_OVERLAY='/sbin/init_overlay'
+REAL_INIT='/sbin/init'
+BACKUP_DIR=${2:-/tmp}
 
 [ -d $BACKUP_DIR ] || fail "ERROR: BACKUP_DIR $BACKUP_DIR not found."
 
 source $CONF ||  fail "ERROR: file not found CONF_FILE: $CONF"
+
+OVERDEV=${OVERDEV:-/dev/mmcblk0p3}
 
 over_enable(){
     #mountpoints
@@ -36,19 +40,20 @@ over_enable(){
 
     #fstab
     cp $FSTAB $BACKUP_DIR
-    if ! grep "^[^#]*$OVERMPOINT" $FSTAB
+    if ! grep "^[^#]*$OVERMPOINT" $FSTAB > /dev/null 2>&1
     then
         #add
-        echo "$DEVICE $OVERMPOINT $FSTYPE $MOUNTOPTS $DUMP $FSCK" >> $FSTAB
+        echo "$OVERDEV $OVERMPOINT $FSTYPE $MOUNTOPTS $DUMP $FSCK" >> $FSTAB
     fi
 
     #init
     cp $CMDLINE $BACKUP_DIR
-    sed -i "s/init=\([^ \t]*\)/init=$INIT_OVERLAY/" $CMDLINE
+    sed -i "s%[ \t]*init=[^ \t]*[ \t]*% %g" $CMDLINE
+    sed -i "s%[ \t]*$% init=$INIT_OVERLAY%" $CMDLINE
 
     #rw ro
-    sed -i "s/[ \t]r[ow][ \t\n]\|[ \t\n]r[ow]$\|^r[ow][ \t\n]/ /g" $CMDLINE  #remove
-    sed -i "s/[ \t]*$/ ro/" $CMDLINE
+    sed -i "s%[ \t\n][ \t\n]*r[ow][ \t\n][ \t\n]*\|[ \t\n][ \t\n]*r[ow]$\|^r[ow][ \t\n][ \t\n]*% %g" $CMDLINE  #remove
+    sed -i "s%[ \t]*$% ro%" $CMDLINE
 
 }
 
@@ -67,21 +72,28 @@ over_disable(){
 
     #fstab
     cp $FSTAB $BACKUP_DIR
-    sed -i "/^[^#]*$OVERMPOINT/d" $FSTAB
+    sed -i "/^[^#]*$(sed 's%/%\\/%g' <<< $OVERMPOINT)/d" $FSTAB
 
     #init
     cp $CMDLINE $BACKUP_DIR
-    sed -i "s/init=\([^ \t]*\)/init=$REAL_INIT/" $CMDLINE
+    sed -i "s%[ \t]*init=[^ \t]*[ \t]*% %g" $CMDLINE
+    #sed -i "s%[ \t]*$% init=$REAL_INIT%" $CMDLINE
 
     #rw ro
-    sed -i "s/[ \t]r[ow][ \t\n]\|[ \t\n]r[ow]$\|^r[ow][ \t\n]/ /g" $CMDLINE  #remove
-    sed -i "s/[ \t]*$/ rw/" $CMDLINE
+    sed -i "s%[ \t\n][ \t\n]*r[ow][ \t\n][ \t\n]*\|[ \t\n][ \t\n]*r[ow]$\|^r[ow][ \t\n][ \t\n]*% %g" $CMDLINE  #remove
+    #sed -i "s%[ \t]*$% rw%" $CMDLINE
 }
 
 
 if [ "$1" = "enable" ]
 then
-    over_enable
-if ["$1" = "disable"]
+    over_enable || fail "ERROR while enabling ovelay"
+    exit 0
+fi
+if [ "$1" = "disable" ]
 then
-    over_disable
+    over_disable || fail "ERROR while disabling ovelay"
+    exit 0
+fi
+
+usage

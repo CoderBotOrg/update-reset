@@ -38,4 +38,13 @@ uninstall:
 	rm $(DESTDIR)etc/coderbot/boot.sig
 	rm $(DESTDIR)etc/coderbot/coderbot.pub
 	rmdir $(DESTDIR)etc/coderbot
+
+desktop:
+	@echo installing desktop
+	cp $(SRCDIR)bin/part_overlay $(DESTDIR)
+	chmod +x $(SRCDIR)bin/part_overlay
+
+desktop-uninstall:
+	@echo uninstalling desktop
+	rm $(DESTDIR)part_overlay
 	

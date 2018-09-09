@@ -1,0 +1,66 @@
+#!/bin/bash
+
+usage() {
+	echo "part_overlay [DEVICE] [ROM_SIZE]"
+	echo "resize root partitiona and creates overlay partition. DEVICE should be /dev/mmcblkX"
+	exit 2
+}
+
+fail(){
+	echo $1
+	exit 1
+}
+
+[[ $1 == "-h" || $1 == "--help" ]] && usage
+
+DEBUG=${DEBUG:-"false"}
+[ "$DEBUG" = "true" ] && set -o xtrace
+
+MAINDEV=${1:-/dev/mmcblk0}
+ROOTPART=${ROOTPART:-2}
+ROOTDEV="${MAINDEV}p2"
+ROOT_SIZE=${2:-"3G"}
+ROOTEND="+${ROOT_SIZE}"
+OVERPART=${OVERPART:-3}
+INCREMENT=${INCREMENT:-1} ##HOW MUCH INCREMENT ROOT'S LAST SECTOR TO OBTAIN OVERLAY FIRST SECTOR
+
+#check fs
+e2fsck -f $ROOTDEV || fail "ERROR at fsck"
+
+#resizefs
+resize2fs $ROOTDEV $ROOT_SIZE  || fail "ERROR at resizefs"
+
+ROOTSTART=`fdisk -l /dev/mmcblk0 | awk -v dev=$ROOTDEV '$1 == dev { print $2 }'`
+[ -z "$ROOTSTART" ] && fail "ERROR detecting root start sector"
+
+#resize root part
+fdisk $MAINDEV << EOF
+d
+$ROOTPART
+n
+p
+$ROOTPART
+$ROOTSTART
+$ROOTEND
+N
+w
+q
+EOF
+[ "$?" -eq 0 ] || fail "ERROR at fdisk resizing root partition"
+
+OVERSTART=`fdisk -l /dev/mmcblk0 | awk -v dev=$ROOTDEV '$1 == dev { print $3 }'`
+
+[ -z "$OVERSTART" ] && fail "ERROR detecting overlay start sector"
+
+OVERSTART=$(( $OVERSTART + $INCREMENT ))
+
+fdisk $MAINDEV << EOF
+n
+p
+$OVERPART
+$OVERSTART
+
+w
+q
+EOF
+[ "$?" -eq 0 ] || fail "ERROR at fdisk creating overlay partition"

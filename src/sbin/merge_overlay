@@ -1,4 +1,6 @@
 #!/bin/bash
+#before this run backup boot to backup it in the overlay and then put in the rom
+#after this create_overlay
 
 usage() {
 	echo "merge_overlay [overlay_mount_point] [rom_mount_point]"

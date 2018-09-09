@@ -1,8 +1,8 @@
 #!/bin/bash
 
 usage() {
-	echo "backup_boot"
-	echo "backup (tar.xz) boot to  /etc/coderbot/boot.tar.xz without signing"
+	echo "backup_boot [BOOT_DIR] [OUT_DIR]"
+	echo "backup (tar.xz) BOOT_DIR (default: /boot) to OUTDIR (default: /etc/coderbot) without signing"
 	exit 2
 }
 
@@ -11,19 +11,24 @@ fail(){
 	exit 1
 }
 
+DEBUG=${DEBUG:-"false"}
+[ "$DEBUG" = "true" ] && set -o xtrace
+
 FORCE=${FORCE:-yes}
-BOOTDIR=/boot
+BOOTDIR=${1:-/boot}
 
 [[ $1 == "-h" || $1 == "--help" ]] && usage
-BACKUPFILE=${BACKUPFILE:-/etc/coderbot/boot.tar.xz}
+
+BACKUP_DIR=${2:-/etc/coderbot}
+BACKUPFILE="${BACKUP_DIR}/boot.tar.xz"
 BACKUPSIG=${BACKUPSIG:-/etc/coderbot/boot.sig}
 
 [ -d $BOOTDIR ] || fail "ERROR: BOOTDIR: $BOOTDIR not found"
 
 if [ $FORCE = "yes" ]
 then
-    [ -f $BACKUPFILE ] && rm $BACKUPFILE || fail "ERROR: can't remove previous backup $BAKCUPFILE"
-    [ -f $BACKUPSIG ] && rm $BACKUPSIG || fail "ERROR: can't remove previous backup sig $BAKCUPSIG"
+    [ -f $BACKUPFILE ] && ( rm $BACKUPFILE || fail "ERROR: can't remove previous backup $BAKCUPFILE" )
+    [ -f $BACKUPSIG ] &&  ( rm $BACKUPSIG || fail "ERROR: can't remove previous backup sig $BAKCUPSIG" )
 fi
 
 [-f $BACKUPFILE ] && fail "ERROR: file $BACKUPFILE already exists.\nDelete it (with signature), then retry."
