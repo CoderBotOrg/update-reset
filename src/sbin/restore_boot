@@ -4,18 +4,18 @@
 #
 
 usage() {
-	echo "restore_boot [BACKUPFILE] [SIGNATURE] [DEVICE] [MOUNTPOINT] [KEYRING] [LABEL]"
+	echo "restore_boot [BACKUPFILE] [DEVICE] [MOUNTPOINT] [LABEL]"
 	echo "restore boot partition from a backup, verifying the signature if present"
 	exit 2
 }
 
-MOUNTPOINT=${4:-/boot}
+MOUNTPOINT=${3:-/boot}
 BACKUPFILE=${1:-/etc/coderbot/boot.tar.xz}
-BACKUPSIG=${2:-/etc/coderbot/boot.sig}
-KEYRING=${5:-/etc/coderbot/coderbot.pub}
-DEVICE=${3:-/dev/mmcblk0p1}
-LABEL=${6:-boot}
-FAT_SIZE=32
+BACKUPSIG=${BACKUPSIG:-/etc/coderbot/boot.sig}
+KEYRING=${KEYRING:-/etc/coderbot/coderbot.pub}
+DEVICE=${2:-/dev/mmcblk0p1}
+LABEL=${4:-BOOT}
+FAT_SIZE=${FAT_SIZE:-32}
 
 fail(){
 	echo $1
@@ -39,8 +39,8 @@ do_restore(){
 }
 
 [ -f $BACKUPFILE ] || fail "ERROR: $BACKUPFILE File not Found"
-[ -f $BACKUPSIG ] || fail "ERROR: $BACKUPSIG File not Found"
-[ -f $KEYRING ] || fail "ERROR: $KEYRING File not Found"
+#[ -f $BACKUPSIG ] || fail "ERROR: $BACKUPSIG File not Found"
+#[ -f $KEYRING ] || fail "ERROR: $KEYRING File not Found"
 
 #verify only if signature is present
 [ -f $BACKUPSIG ] && verify

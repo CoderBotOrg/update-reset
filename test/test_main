@@ -1,0 +1,145 @@
+#!/usr/bin/env bats
+
+
+REPODIR=${REPODIR:-`cd ../;pwd;cd - > /dev/null`}
+export PATH="$PATH:${REPODIR}/src/bin:${REPODIR}/src/sbin"
+
+TESTDIR=${TESTDIR:-/tmp/test}
+[ -d $TESTDIR ] || mkdir $TESTDIR
+cd $TESTDIR
+
+OLDBOOT="https://downloads.raspberrypi.org/raspbian_lite/archive/2018-03-14-05:21/boot.tar.xz"
+NEWBOOT="https://downloads.raspberrypi.org/raspbian_lite/boot.tar.xz"
+
+OLDPATH=boot
+NEWPATH=newboot
+
+@test "setup env" {
+    [ -d $OLDPATH ] || ( mkdir $OLDPATH && curl -L "$OLDBOOT"  | tar xfJv - -C $OLDPATH )
+    result=$?
+    [ "$result" -eq 0 ]
+}
+
+@test "backup boot relative create" {
+    NAME="boot_relative.tar.xz"
+    [ -f "$NAME" ] || \
+    BACKUPNAME=$NAME backup_boot $OLDPATH .
+    result=$?
+    [ "$result" -eq 0 ]
+}
+
+@test "backup boot relative check" {
+    DIR="boot_relative"
+    NAME="boot_relative.tar.xz"
+    MAINDIR="$OLDPATH"
+    [ -d $DIR ] || \
+    ( mkdir $DIR && tar xfvJ $NAME -C $DIR ) && \
+    diff $MAINDIR $DIR
+    [ $? -eq 0 ]
+}
+
+@test "backup boot absolute path" {
+    NAME="boot_abs.tar.xz"
+    [ -f "$NAME" ] || \
+    BACKUPNAME=$NAME backup_boot `pwd`/$OLDPATH .
+    result=$?
+    [ "$result" -eq 0 ]
+}
+
+@test "backup boot abs check" {
+    DIR="boot_abs"
+    NAME="boot_abs.tar.xz"
+    MAINDIR="$OLDPATH"
+    [ -d $DIR ] || \
+    ( mkdir $DIR && tar xfvJ $NAME -C $DIR ) && \
+    diff $MAINDIR $DIR
+    [ $? -eq 0 ]
+}
+
+@test "overlay prepare" {
+    ROM="${OLDPATH}_bak"
+    cp -a $OLDPATH $ROM
+    mount | grep `pwd`/rom || \
+    ( mkdir -p rom overlay/{upper,work} merged &&  \
+    sudo mount -B -o ro $ROM rom ) && \
+    mount | grep `pwd`/merged || \
+    sudo mount -t overlay overlay -o lowerdir=rom,upperdir=overlay/upper,workdir=overlay/work merged
+    [ $? -eq 0 ]
+}
+
+@test "overlay modify" {
+    [ -d $NEWPATH ] || ( mkdir $NEWPATH && curl -L "$NEWBOOT"  | tar xfJv - -C $NEWPATH ) && \
+    cp -a $NEWPATH/. merged/ && \
+    #delete a folder
+    rm -rf merged/overlays && \
+    #delete some files
+    rm merged/{bootcode.bin,config.txt}
+    result=$?
+    [ "$result" -eq 0 ]
+}
+
+@test "overlay merge check" {
+    #backup merged now
+    [ -d merged_bak ] || mkdir merged_bak
+    cp -a merged/. merged_bak/ && \
+    #merging to rom
+    sudo merge_overlay overlay rom && \
+    diff merged_bak rom && \
+    [ "$?" -eq 0 ]
+}
+
+@test "restore boot env" {
+    IMG=boot.img
+    MPOINT="boot_mp"
+    mount | grep $MPOINT && sudo umount $MPOINT
+    sudo losetup -D
+    fallocate -l 100M $IMG && \
+    fdisk $IMG << EOF
+n
+p
+1
+
+
+w
+EOF
+    [ "$?" -eq 0 ] && LODEV=`sudo losetup -fLP --show boot.img` && \
+    [ -d $MPOINT ] || mkdir $MPOINT && \
+    #test without filesystem
+    sudo wipefs -a "${LODEV}p1" && \
+    sudo restore_boot boot_abs.tar.xz "${LODEV}p1" $MPOINT && \
+    #test with file system (redo)
+    sudo restore_boot boot_abs.tar.xz "${LODEV}p1" $MPOINT && \
+    diff $MPOINT $OLDPATH
+    sudo umount $MPOINT
+    [ "$?" -eq 0 ]
+}
+
+@test "create overlay" {
+    IMG=overlay.img
+    MPOINT="overlay_mp"
+    mount | grep $MPOINT && sudo umount $MPOINT
+    sudo losetup -D
+    fallocate -l 100M $IMG && \
+    fdisk $IMG << EOF
+n
+p
+1
+
+
+w
+EOF
+    [ "$?" -eq 0 ] && LODEV=`sudo losetup -fLP --show boot.img` && \
+    [ -d $MPOINT ] || mkdir $MPOINT && \
+    #test without filesystem
+    sudo create_overlay "${LODEV}p1" ext4 overlay $MPOINT && \
+    #check dirs
+    sudo mount "${LODEV}p1" $MPOINT && \
+    [ -d $MPOINT/upper ] && [ -d $MPOINT/work ] && \
+    #test with filesystem (redo)
+    sudo create_overlay "${LODEV}p1" ext4 overlay $MPOINT && \
+    #check dirs
+    sudo mount "${LODEV}p1" $MPOINT && \
+    [ -d $MPOINT/upper ] && [ -d $MPOINT/work ]
+    sudo umount $MPOINT
+    [ "$?" -eq 0 ]
+}

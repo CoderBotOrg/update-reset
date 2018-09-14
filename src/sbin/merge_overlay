@@ -15,26 +15,37 @@ fail(){
 
 [[ $1 == "-h" || $1 == "--help" ]] && usage
 
-CONF=/etc/coderbot/init_overlay.conf
-source $CONF ||  fail "ERROR: file not found CONF_FILE: $CONF"
+CONF=${CONF:-/etc/coderbot/init_overlay.conf}
+source $CONF #||  fail "ERROR: file not found CONF_FILE: $CONF"
 
 OVERMPOINT=${OVERMPOINT:-$1}
 ROMMPOINT=${ROMMPOINT:-$2}
 REOPTS="rw,remount,rw"
+UPPERDIR=${UPPERDIR:-upper}
 
 [ -d $OVERMPOINT ] || fail "ERROR: OVERMPOINT $OVERMPOINT directory not faound"
 [ -d $ROMMPOINT ] || fail "ERROR: ROMMPOINT $ROMMPOINT directory not faound"
 
 mount -o $REOPTS $ROMMPOINT || fail "ERROR: can't remount $ROMMPOINT rw"
 
-cd $OVERMPOINT
+cd "$OVERMPOINT/$UPPERDIR" || fail "ERROR: can't cd to $OVERMPOINT/$UPPERDIR, maybe not exists"
 REMOVED=`find . -perm 000 -type c -exec ls -lb {} \; | perl -lane 'if($F[4] == "0" && $F[5] == "0"){$out=join(" ", @F[9..$#F]); $out =~ s/^\.\///; print $out;}'`
-while read line
-do
-	rm -rf "$ROMMPOINT/$line" || fail "ERROR: can't remove $ROMMPOINT/$line"
-done <<< $REMOVED
 
-cp -a $OVERMPOINT/* $ROMMPOINT/ || fail "ERROR in copying files"
+#back to previous dir
+cd - || fail "ERROR: can't cd to previous dir (-)"
+
+if [ -z "$REMOVED" ]
+then
+	echo "Nothing to remove"
+else
+	while read line
+	do
+		rm -rf "$ROMMPOINT/$line" || fail "ERROR: can't remove $ROMMPOINT/$line"
+		rm -rf "${OVERMPOINT}/${UPPERDIR}/$line" || fail "ERROR: can't remove ${OVERMPOINT}/${UPPERDIR}/$line"
+	done <<< $REMOVED
+fi
+
+cp -a "${OVERMPOINT}/${UPPERDIR}/." $ROMMPOINT/ || fail "ERROR in copying files"
 
 echo "Merged ok, now you should clear overlay and backup boot"
 

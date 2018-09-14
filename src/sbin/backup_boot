@@ -20,7 +20,8 @@ BOOTDIR=${1:-/boot}
 [[ $1 == "-h" || $1 == "--help" ]] && usage
 
 BACKUP_DIR=${2:-/etc/coderbot}
-BACKUPFILE="${BACKUP_DIR}/boot.tar.xz"
+BACKUPNAME=${BACKUPNAME:-boot.tar.xz}
+BACKUPFILE="${BACKUP_DIR}/${BACKUPNAME}"
 BACKUPSIG=${BACKUPSIG:-/etc/coderbot/boot.sig}
 
 [ -d $BOOTDIR ] || fail "ERROR: BOOTDIR: $BOOTDIR not found"
