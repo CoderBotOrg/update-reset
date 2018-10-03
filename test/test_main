@@ -18,6 +18,11 @@ NEWPATH=newboot
     [ -d $OLDPATH ] || ( mkdir $OLDPATH && curl -L "$OLDBOOT"  | tar xfJv - -C $OLDPATH ) && \
     mkdir $OLDPATH/dats && \
     mv $OLDPATH/*.dat $OLDPATH/dats/ && \
+    #creo file con spazio
+    echo "spazio" > "$OLDPATH/file spaziato" && \
+    #creo cartella spaziata
+    mkdir "$OLDPATH/cartella spaziata" && \
+    echo "prova" > "$OLDPATH/cartella spaziata/file1"
     result=$?
     [ "$result" -eq 0 ]
 }
@@ -76,10 +81,18 @@ NEWPATH=newboot
     rm -rf merged/overlays && \
     #delete some files
     rm merged/{bootcode.bin,config.txt} && \
+    #make folder opaque
     rm -rf merged/dats && \
     mkdir merged/dats && \
     echo "nodats" > merged/dats/nodats && \
-    echo "nocmd" > merged/cmdline.txt
+    #change a file
+    echo "nocmd" > merged/cmdline.txt && \
+    #delete spaziato
+    rm "merged/file spaziato" && \
+    #opaque cartella spaziata
+    rm -rf "merged/cartella spaziata" && \
+    mkdir "merged/cartella spaziata" && \
+    echo "prova2" > "merged/cartella spaziata/secondo"
     result=$?
     [ "$result" -eq 0 ]
 }
