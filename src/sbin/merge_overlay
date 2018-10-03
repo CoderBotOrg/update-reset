@@ -30,6 +30,7 @@ mount -o $REOPTS $ROMMPOINT || fail "ERROR: can't remount $ROMMPOINT rw"
 
 cd "$OVERMPOINT/$UPPERDIR" || fail "ERROR: can't cd to $OVERMPOINT/$UPPERDIR, maybe not exists"
 REMOVED=`find . -perm 000 -type c -exec ls -lb {} \; | perl -lane 'if($F[4] == "0" && $F[5] == "0"){$out=join(" ", @F[9..$#F]); $out =~ s/^\.\///; print $out;}'`
+OPAQUE=`getfattr -dm- -R . | perl -le '$lastfile=""; while(<>){if($_ =~ m/^#.*file:/){@F = split /[ \n]/,$_; $lastfile=$F[2];}else{if($_ =~ m/trusted.overlay.opaque="y"/){print $lastfile;}}}'`
 
 #back to previous dir
 cd - || fail "ERROR: can't cd to previous dir (-)"
@@ -43,6 +44,16 @@ else
 		rm -rf "$ROMMPOINT/$line" || fail "ERROR: can't remove $ROMMPOINT/$line"
 		rm -rf "${OVERMPOINT}/${UPPERDIR}/$line" || fail "ERROR: can't remove ${OVERMPOINT}/${UPPERDIR}/$line"
 	done <<< $REMOVED
+fi
+
+if [ -z "$OPAQUE" ]
+then
+	echo "No opaque to remove"
+else
+	while read oline
+	do
+		rm -rf "$ROMMPOINT/$oline" || fail "ERROR: can't remove $ROMMPOINT/$oline"
+	done <<< $OPAQUE
 fi
 
 cp -a "${OVERMPOINT}/${UPPERDIR}/." $ROMMPOINT/ || fail "ERROR in copying files"

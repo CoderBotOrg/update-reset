@@ -15,7 +15,9 @@ OLDPATH=boot
 NEWPATH=newboot
 
 @test "setup env" {
-    [ -d $OLDPATH ] || ( mkdir $OLDPATH && curl -L "$OLDBOOT"  | tar xfJv - -C $OLDPATH )
+    [ -d $OLDPATH ] || ( mkdir $OLDPATH && curl -L "$OLDBOOT"  | tar xfJv - -C $OLDPATH ) && \
+    mkdir $OLDPATH/dats && \
+    mv $OLDPATH/*.dat $OLDPATH/dats/ && \
     result=$?
     [ "$result" -eq 0 ]
 }
@@ -34,7 +36,7 @@ NEWPATH=newboot
     MAINDIR="$OLDPATH"
     [ -d $DIR ] || \
     ( mkdir $DIR && tar xfvJ $NAME -C $DIR ) && \
-    diff $MAINDIR $DIR
+    diff -r $MAINDIR $DIR
     [ $? -eq 0 ]
 }
 
@@ -52,7 +54,7 @@ NEWPATH=newboot
     MAINDIR="$OLDPATH"
     [ -d $DIR ] || \
     ( mkdir $DIR && tar xfvJ $NAME -C $DIR ) && \
-    diff $MAINDIR $DIR
+    diff -r $MAINDIR $DIR
     [ $? -eq 0 ]
 }
 
@@ -73,7 +75,11 @@ NEWPATH=newboot
     #delete a folder
     rm -rf merged/overlays && \
     #delete some files
-    rm merged/{bootcode.bin,config.txt}
+    rm merged/{bootcode.bin,config.txt} && \
+    rm -rf merged/dats && \
+    mkdir merged/dats && \
+    echo "nodats" > merged/dats/nodats && \
+    echo "nocmd" > merged/cmdline.txt
     result=$?
     [ "$result" -eq 0 ]
 }
@@ -84,7 +90,8 @@ NEWPATH=newboot
     cp -a merged/. merged_bak/ && \
     #merging to rom
     sudo merge_overlay overlay rom && \
-    diff merged_bak rom && \
+    diff -r merged_bak rom && \
+    diff -r merged_bak rom
     [ "$?" -eq 0 ]
 }
 
@@ -109,7 +116,7 @@ EOF
     sudo restore_boot boot_abs.tar.xz "${LODEV}p1" $MPOINT && \
     #test with file system (redo)
     sudo restore_boot boot_abs.tar.xz "${LODEV}p1" $MPOINT && \
-    diff $MPOINT $OLDPATH
+    diff -r $MPOINT $OLDPATH
     sudo umount $MPOINT
     [ "$?" -eq 0 ]
 }

@@ -1,0 +1,5 @@
+#!/bin/bash
+TESTDIR=${TESTDIR:-/tmp/test}
+sudo umount $TESTDIR/rom
+sudo umount $TESTDIR/merged
+rm -rf $TESTDIR
