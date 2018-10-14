@@ -11,7 +11,7 @@ Overlay is mounted by an init script. It mounts upper file-system, merge rootfs 
 If the button is pressed it cleans the upper fs.
 
 ## Setup
-### Creation of the upper partition
+### Create of the upper partition or use part_overlay
 #### Partition Setup
 ##### Check fs usage with:  
 ```
@@ -68,6 +68,13 @@ cd overlay-factory-reset
 sudo make install DESTDIR=/
 ```
 
+### Install desktop scripts
+```
+git clone https://github.com/CoderBotOrg/overlay-factory-reset
+cd overlay-factory-reset
+sudo make desktop DESTDIR=.
+```
+
 ### Enable overlay
 #### Add this line to /etc/fstab or use enable_overlay:
 ```
@@ -111,6 +118,13 @@ Then put it in /etc/coderbot/coderbot.pub
 git clone https://github.com/CoderBotOrg/overlay-factory-reset
 cd overlay-factory-reset
 sudo make uninstall DESTDIR=/
+```
+
+### Uninstall desktop scripts
+```
+git clone https://github.com/CoderBotOrg/overlay-factory-reset
+cd overlay-factory-reset
+sudo make desktop-uninstall DESTDIR=.
 ```
 
 ### TODO

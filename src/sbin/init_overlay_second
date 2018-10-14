@@ -24,6 +24,7 @@ mount --move $ROMMPOINT/dev /dev || mount -t devtmpfs devtmpfs /dev || fail "ERR
 [ -d /dev/fd ] || ln -s /proc/self/fd /dev/fd || fail "ERROR: probem with /dev/fd, nedded for log"
 mount --move $ROMMPOINT/run /run || mount -t tmpfs tmpfs /run || fail "ERROR: problem mounting tmp"
 
+
 exec > >(tee -a $TMP_LOG2) 2>&1
 
 echo "starting overlay second stage..."
@@ -31,6 +32,28 @@ echo "starting overlay second stage..."
 #move all mounts under rom
 ROMMPOINT=${ROMMPOINT#/}
 perl -lane "(\$submount) = \$F[1] =~ /\/$ROMMPOINT(\/[^\/]+)/; print \"/$ROMMPOINT\$submount \$submount\" if \$submount" < /proc/mounts | sort | uniq | xargs -n 2 mount --move || fail "ERROR: could not mount move .."
+
+DOUPDATE=0
+#check update at boot because nothing is in use
+UPFILE=""
+for updatefile in ${UPDATE_PATHS[@]}
+do
+	if ! [ -z "$updatefile"] && [ -f "$updatefile"]
+	then
+		DOUPDATE=1
+                UPFILE=$updatefile
+                echo "Found update, going to apply it"
+	fi
+done
+
+if [ "$DOUPDATE" -eq 1 ] && ! [ -z "$UPFILE" ]
+then
+        echo "Applying update"
+        coderbot_update $UPFILE && rm $UPFILE || fail "ERROR while updating"
+fi
+
+#mount root read only
+mount -o ro,remount,ro /
 
 echo "I'm going to call real init"
 flush_log

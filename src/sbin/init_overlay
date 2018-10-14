@@ -43,6 +43,12 @@ exec > >(tee -a $TMP_LOG) 2>&1
 
 echo "starting overlay boot..."
 
+DORESET=0
+do_reset(){
+	echo "resetting $@... :o"
+	/sbin/create_overlay
+	/sbin/restore_boot
+}
 #gpio need sys
 [ -d /sys/class ] || mount -t sysfs sysfs /sys || fail "ERROR: sys not mounted, necessary for gpio" init_fallback
 
@@ -53,21 +59,76 @@ echo "in" > /sys/class/gpio/gpio$BUTTON/direction || fail "ERROR: could not set 
 #check if button pressed (when 0)
 if (( $(cat /sys/class/gpio/gpio$BUTTON/value) == 0 ))
 then
-	echo "resetting... :o"
-	/sbin/create_overlay
-	/sbin/restore_boot
+	do_reset from button
 fi
 #unset button
 echo $BUTTON > /sys/class/gpio/unexport || fail "ERROR: could not remove button from sys class"
 
 #mount needed partition
-for partition in $MOUNTPARTS
+mountall(){
+	for partition in ${MOUNTPARTS[@]}
+	do
+		#check if already mounted
+		if ! grep $partition /proc/mounts > /dev/null
+		then
+			awk -v part=$partition '$2 == part { printf "-t %s -o %s %s %s\n", $3, $4, $1, $2 }' /etc/fstab | xargs mount || fail "ERROR: could not mount $partition"
+		fi
+	done
+}
+
+mountall()
+
+#check reset file 
+DORESET=0
+for flag in ${RST_FLAGS[@]}
 do
-	awk -v part=$partition '$2 == part { printf "-t %s -o %s %s %s\n", $3, $4, $1, $2 }' /etc/fstab | xargs mount || fail "ERROR: could not mount $partition"
+	if ! [ -z "$flag"] && [ -f "$flag"]
+	then
+		DORESET=1
+		rm $flag
+	fi
 done
+
+if [ "$DORESET" -eq 1 ]
+then
+	DORESET=0
+	umount $OVERMPOINT || fail "ERROR: could not umount upper before reset"
+	do_reset from file
+fi
+
+#now remount
+mountall()
 
 #tmpfs for doing stuff
 mount -t tmpfs tmpfs $TMPMPOINT || fail "ERROR: could not create tmpfs on $TMPMPOINT" init_fallback
+
+DOUPDATE=0
+#check update at boot because nothing is in use
+for updatefile in ${UPDATE_PATHS[@]}
+do
+	if ! [ -z "$updatefile"] && [ -f "$updatefile"]
+	then
+		#root need to be rw for merge
+		mount -o rw,remount,rw /
+		DOUPDATE=1
+		[[ "$updatefile" == "$UPDATE_TEMP"]] || \
+		( [ -z "$UPDATE_TEMP" ] || \
+		cp $updatefile $UPDATE_TEMP )
+	fi
+done
+
+if [ "$DOUPDATE" -eq 1 ]
+then
+	#do update
+	#merge first
+	merge_overlay && \
+	#backup_boot
+	backup_boot && \
+	#create new overlay
+	/sbin/create_overlay && \
+	mountall
+fi
+
 modprobe overlay > /dev/null 2>&1 || modprobe overlay -d $OVERMPOINT/upper > /dev/null 2>&1 || fail "ERROR: missing overlay kernel module" init_fallback
 #check dirs
 [ -d $OVERMPOINT/upper ] || mkdir $OVERMPOINT/upper

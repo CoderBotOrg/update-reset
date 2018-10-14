@@ -2,7 +2,7 @@
 
 usage() {
 	echo "part_overlay [DEVICE] [ROM_SIZE]"
-	echo "resize root partitiona and creates overlay partition. DEVICE should be /dev/mmcblkX"
+	echo "resize root partition and creates overlay partition. DEVICE should be /dev/mmcblkX"
 	exit 2
 }
 
