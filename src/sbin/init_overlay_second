@@ -49,7 +49,7 @@ done
 if [ "$DOUPDATE" -eq 1 ] && ! [ -z "$UPFILE" ]
 then
         echo "Applying update"
-        coderbot_update $UPFILE && rm $UPFILE || fail "ERROR while updating"
+        CLEAR_UPDATE_FILE=true coderbot_update $UPFILE || fail "ERROR while updating"
 fi
 
 #mount root read only
