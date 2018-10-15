@@ -121,7 +121,7 @@ if [ "$DOUPDATE" -eq 1 ]
 then
 	#do update
 	#merge first
-	merge_overlay && \
+	merge_overlay $OVERMPOINT / && \
 	#backup_boot
 	backup_boot && \
 	#create new overlay
