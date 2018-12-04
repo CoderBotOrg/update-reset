@@ -76,13 +76,13 @@ mountall(){
 	done
 }
 
-mountall()
+mountall
 
 #check reset file 
 DORESET=0
 for flag in ${RST_FLAGS[@]}
 do
-	if ! [ -z "$flag"] && [ -f "$flag"]
+	if ! [ -z "$flag" ] && [ -f "$flag" ]
 	then
 		DORESET=1
 		rm $flag
@@ -97,7 +97,7 @@ then
 fi
 
 #now remount
-mountall()
+mountall
 
 #tmpfs for doing stuff
 mount -t tmpfs tmpfs $TMPMPOINT || fail "ERROR: could not create tmpfs on $TMPMPOINT" init_fallback
@@ -106,12 +106,12 @@ DOUPDATE=0
 #check update at boot because nothing is in use
 for updatefile in ${UPDATE_PATHS[@]}
 do
-	if ! [ -z "$updatefile"] && [ -f "$updatefile"]
+	if ! [ -z "$updatefile" ] && [ -f "$updatefile" ]
 	then
 		#root need to be rw for merge
 		mount -o rw,remount,rw /
 		DOUPDATE=1
-		[[ "$updatefile" == "$UPDATE_TEMP"]] || \
+		[[ "$updatefile" == "$UPDATE_TEMP" ]] || \
 		( [ -z "$UPDATE_TEMP" ] || \
 		cp $updatefile $UPDATE_TEMP )
 	fi
@@ -121,7 +121,7 @@ if [ "$DOUPDATE" -eq 1 ]
 then
 	#do update
 	#merge first
-	merge_overlay $OVERMPOINT / && \
+	merge_overlay && \
 	#backup_boot
 	backup_boot && \
 	#create new overlay
