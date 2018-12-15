@@ -40,12 +40,13 @@ KEYRING=${3:-${ROOT}etc/coderbot/coderbot.pub}
 WORKING_DIR=${2:-.}
 INNER_NAME="update.tar.xz"
 SIGNAME="update.sig"
+DOVERIFYSIG=${DOVERIFYSIG:-true} #verify signature?
 
 BREAK_ON_FAIL=${BREAK_ON_FAIL:-false} #se true interrompe dopo uno script fallito
 #esempio BREAK_ON_FAIL=true coderbot_update
 
 CLEAR_WORKING_DIR=${CLEAR_WORKING_DIR:-true}
-CLEAR_UPDATE_FILE=${CLEAR_UPDATE_FILE:-false}
+CLEAR_UPDATE_FILE=${CLEAR_UPDATE_FILE:-true}
 
 ERRORS=false
 
@@ -58,10 +59,10 @@ cd $WORKING_DIR
 
 #verify inner tar.xz
 verify(){
-	gpg --no-default-keyring --keyring $KEYRING --verify $SIGNAME $INNER_NAME || fail "ERROR: could not verify" 7
+	$DOVERIFYSIG || gpg --no-default-keyring --keyring $KEYRING --verify $SIGNAME $INNER_NAME || fail "ERROR: could not verify" 7
 }
 
-#verify
+verify
 #now is verified
 
 #extract inner tar.xz (2 folders: files, scripts) in current dir
