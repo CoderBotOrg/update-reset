@@ -59,7 +59,7 @@ cd $WORKING_DIR
 
 #verify inner tar.xz
 verify(){
-	$DOVERIFYSIG || gpg --no-default-keyring --keyring $KEYRING --verify $SIGNAME $INNER_NAME || fail "ERROR: could not verify" 7
+	$DOVERIFYSIG || gpg --ignore-time-conflict --ignore-valid-from --no-default-keyring --keyring $KEYRING --verify $SIGNAME $INNER_NAME || fail "ERROR: could not verify" 7
 }
 
 verify
