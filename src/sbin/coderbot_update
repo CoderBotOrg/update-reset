@@ -1,0 +1,143 @@
+#!/bin/bash
+# update coderbot with an update package
+
+flush_log(){
+	echo "writing log to files..."
+	tee < $TMP_LOG -a ${LOG_FILES[@]} > /dev/null
+	tee < $TMP_LOG ${LAST_LOGS[@]} > /dev/null
+}
+
+fail() {
+	echo $1
+	flush_log
+	echo $STATUS_ERR | tee $STATUS_FILE
+	exit ${2:-2}
+}
+
+usage() {
+	echo "coderbot_update UPDATE_FILE [WORKING_DIR] [KEYRING]"
+	echo "applies the update"
+	exit 20
+}
+
+[ -z $DEBUG ] || set -o xtrace
+
+#refere to root using this. should be useful for testing purpose: ROOT=safedir coderbotupdate ....
+ROOT=${ROOT:-/}
+
+TMP_LOG=${ROOT}tmp/coderbot_update_last.log
+LOG_FILES=(${ROOT}var/log/coderbot_update.log)
+LAST_LOGS=(${ROOT}var/log/coderbot_update_last.log)
+
+exec > >(tee -a $TMP_LOG) 2>&1
+
+#[[ `whoami` == "root" ]] || fail "ERROR: this script needs ROOT privileges" 1
+
+(( $# == 0)) || [[ $1 == "-h" || $1 == "--help" ]] && usage
+
+UPDATE_FILE=$1
+KEYRING=${3:-${ROOT}etc/coderbot/coderbot.pub}
+WORKING_DIR=${2:-.}
+INNER_NAME="update.tar.xz"
+SIGNAME="update.sig"
+
+BREAK_ON_FAIL=${BREAK_ON_FAIL:-false} #se true interrompe dopo uno script fallito
+#esempio BREAK_ON_FAIL=true coderbot_update
+
+CLEAR_WORKING_DIR=${CLEAR_WORKING_DIR:-true}
+CLEAR_UPDATE_FILE=${CLEAR_UPDATE_FILE:-false}
+
+ERRORS=false
+
+#extract outer tar in working dir (create if not exists)
+[ -f $UPDATE_FILE ] || fail "ERROR: File not Found UPDATE_FILE: $UPDATE_FILE"
+[ -f $KEYRING_FILE ] || fail "ERROR: File not Found UPDATE_FILE: $KEYRING_FILE"
+[ -d $WORKING_DIR ] || mkdir $WORKING_DIR
+tar xfv $UPDATE_FILE -C $WORKING_DIR
+cd $WORKING_DIR
+
+#verify inner tar.xz
+verify(){
+	gpg --no-default-keyring --keyring $KEYRING --verify $SIGNAME $INNER_NAME || fail "ERROR: could not verify" 7
+}
+
+#verify
+#now is verified
+
+#extract inner tar.xz (2 folders: files, scripts) in current dir
+tar xfJv $INNER_NAME
+
+#check if update is applicable
+source update.info
+
+VERSION_FILE=${VERSION_FILE:-${ROOT}etc/coderbot/version}
+STATUS_FILE=${STATUS_FILE:-${ROOT}etc/coderbot/update_status}
+
+[ -f $VERSION_FILE ] || fail "ERROR: File not Found: VERSION_FILE: $VERSION_FILE" 8
+[ -f $STATUS_FILE ] || fail "ERROR: File not Found: STATUS_FILE: $STATUS_FILE" 8
+
+INSTALLED_VERSION=`cat $VERSION_FILE`
+STATUS=`cat $STATUS_FILE`
+STATUS_DONE="done"
+STATUS_PENDING="pending"
+STATUS_ERR="errors"
+
+check_last_status(){
+	[[ $STATUS == $STATUS_DONE ]]	
+}
+
+check_update(){
+	! [ -z $VERSION ] && check_version && check_env
+}
+
+check_last_status || fail "ERROR: seems last update failed" 4
+
+check_update || fail "ERROR: update version compatibility problems" 5
+
+#use like pending 1 10 when 1 script of 10 was already done
+pending(){
+	echo "$STATUS_PENDING $@" | tee $STATUS_FILE
+}
+
+pending 0 0
+
+#exec scripts
+cd scripts
+allscripts=($(ls *.sh))
+numscripts=${#allscripts[@]}
+countscripts=0
+for script in ${allscripts[@]}
+do
+	let countscripts++
+	pending $countscripts $numscripts $script
+    bash $script || ERRORS=true && $BREAK_ON_FAIL && fail "ERROR: script: $script ended with non zero exit code" 6
+done
+
+cd ..
+
+$CLEAR_WORKING_DIR && {
+	rm ${WORKING_DIR}/update.tar.xz \
+	${WORKING_DIR}/update.sig \
+	${WORKING_DIR}/update.info
+	rm -rf ${WORKING_DIR}/files \
+	${WORKING_DIR}/scripts
+	rmdir $WORKING_DIR 2> /dev/null
+	echo "cleaned working dir: $WORKING_DIR"
+	}
+
+
+echo $VERSION > $VERSION_FILE
+
+if $ERRORS
+then
+	echo "ERRORS occurred while updating"
+	echo $STATUS_ERR | tee $STATUS_FILE
+	flush_log
+    exit 3
+else
+	echo "Update applied OK"
+	echo $STATUS_DONE | tee $STATUS_FILE    
+	$CLEAR_UPDATE_FILE && rm $UPDATE_FILE && echo "cleaned update file: $UPDATE_FILE"
+fi
+flush_log
+exit 0

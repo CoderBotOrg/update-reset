@@ -1,0 +1,52 @@
+#!/bin/bash
+#update:
+# tar { signature, inner.tar.xz: {files, scripts}}
+
+usage() {
+	echo "create_update UPDATE_NAME UPDATE_DIR DEFAULT_KEY"
+	echo "creates an update package names UPDATE_NAME.tar"
+	exit 1
+}
+
+
+fail() {
+	echo $1
+	exit 2
+}
+
+(( $# < 3)) || [[ $1 == "-h" || $1 == "--help" ]] && usage
+
+BACKUP_DIR=${2:-.}
+
+[ -d $BACKUP_DIR ] || fail "ERROR: Directory not found: BACKUP_DIR: $BACKUP_DIR"
+
+FILENAME=${1}
+grep "\.tar" <<< $FILENAME || FILENAME="${FILENAME}.tar"
+[ -f $FILENAME ] && fail "ERROR: Update file already exists: UPDATE_NAME: $FILENAME"
+
+SIGNAME="update.sig"
+DEF_KEY=$3
+CLEAR=${CLEAR:-true}
+TMPDIR="tmp_update/"
+
+INNER_NAME="update" #name of inner archive, tar_sig adds .tar.xz
+INNER_EXT=".tar.xz"
+
+
+[ -d "$TMPDIR" ] && echo "WARNING: $TMPDIR already exists" || mkdir $TMPDIR
+
+#inner and signature
+echo "compressing and signing..."
+tar_sig ${TMPDIR}$INNER_NAME $BACKUP_DIR $DEF_KEY || fail "ERROR: could not create inner archive"
+
+#tar
+echo "archiving..."
+tar cfv $FILENAME -C ${TMPDIR} ${INNER_NAME}${INNER_EXT} $SIGNAME || fail "ERROR: could not create outer archive"
+
+if $CLEAR
+then
+	echo "clearing..."
+	rm ${TMPDIR}${INNER_NAME}${INNER_EXT}
+	rm ${TMPDIR}$SIGNAME
+	rmdir ${TMPDIR}
+fi

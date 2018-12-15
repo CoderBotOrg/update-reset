@@ -61,8 +61,8 @@ cp -a "${OVERMPOINT}/${UPPERDIR}/." $ROMMPOINT/ || fail "ERROR in copying files"
 echo "Merged ok, now you should clear overlay and backup boot"
 
 ##delete overlay and create new one
-#create_overlay || fail "ERROR in creating new overlay"
-#
+create_overlay || fail "ERROR in creating new overlay"
+
 #BACKUPFILE=${BACKUPFILE:-/etc/coderbot/boot.tar.xz}
 #BACKUPSIG=${BACKUPSIG:-/etc/coderbot/boot.sig}
 #

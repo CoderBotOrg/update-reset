@@ -38,7 +38,7 @@ DOUPDATE=0
 UPFILE=""
 for updatefile in ${UPDATE_PATHS[@]}
 do
-	if ! [ -z "$updatefile"] && [ -f "$updatefile"]
+	if ! [ -z "$updatefile" ] && [ -f "$updatefile" ]
 	then
 		DOUPDATE=1
                 UPFILE=$updatefile
@@ -49,6 +49,7 @@ done
 if [ "$DOUPDATE" -eq 1 ] && ! [ -z "$UPFILE" ]
 then
         echo "Applying update"
+	touch /home/pi/doreset
         CLEAR_UPDATE_FILE=true coderbot_update $UPFILE || fail "ERROR while updating"
 fi
 
