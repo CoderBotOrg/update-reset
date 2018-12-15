@@ -107,7 +107,7 @@ DOUPDATE=0
 for updatefile in ${UPDATE_PATHS[@]}
 do
 	if ! [ -z "$updatefile" ] && [ -f "$updatefile" ]
-	then:
+	then
 		echo "update found"
 		#root need to be rw for merge
 		mount -o rw,remount,rw /
