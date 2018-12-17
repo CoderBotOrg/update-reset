@@ -8,10 +8,9 @@ With overlays we can keep the root partition (overlay *lowerdir*) read only and 
 
 We can trigger a *restore* event (from a file, physical button, ..) which at boot will delete modifications in upper file-system, effectively resulting in a factory reset.
 
-## About Impementation
 Overlay is mounted by an init script. It mounts upper file-system, merge rootfs and upper into an overlayfs making this the new rootfs. Then calls systemd.
 
-If the button is pressed it cleans the upper fs.
+If the restore event is raised it cleans the upper fs.
 
 ## Setup
 ### Create of the upper partition or use part_overlay
@@ -37,7 +36,7 @@ sudo resize2fs /dev/mmcblk0p2 3G
 ```
 sudo fdisk /dev/mmcblk0
 ```
-Type <kbd>p<</kbd> to list partition, take note of `/dev/mmcblk0p2`'s Start sector  
+Type <kbd>p</kbd> to list partition, take note of `/dev/mmcblk0p2`'s Start sector  
 Type <kbd>d</kbd>, then <kbd>2</kbd> to delete second partition  
 Type <kbd>n</kbd>, then <kbd>p</kbd> for primary, then <kbd>2</kbd> to recreate the second partition  
 Insert old `/dev/mmcblk0p2`'s Start sector, then type `+3G` as last sector to obtain a 3GB partition
