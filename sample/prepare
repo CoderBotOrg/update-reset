@@ -22,7 +22,7 @@ rm -rf $PI_INSTALL_PATH/coderbot/.git
 
 echo "Building and copying frontend"
 cd $VUE_APP
-#npm run build
+npm run build
 cp dist $PI_INSTALL_PATH/coderbot/ -r
 
 cd $UPDATE_PATH
