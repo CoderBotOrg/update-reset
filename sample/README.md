@@ -15,10 +15,6 @@ Prepare the payload with:
 ./prepare
 ```
 
-Build and sign the package with:
-
-```bash
-create_update sample_update sample_update GPG-PRIVATE-KEY
-```
+(It will build and sign the package with: `create_update sample_update sample_update GPG-PRIVATE-KEY`)
 
 `sample_update.tar` will be produced.
