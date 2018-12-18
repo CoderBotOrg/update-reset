@@ -1,4 +1,8 @@
-# Overlay-factory-reset
+# update-reset
+
+> CoderBot is a RaspberryPI-based programmable robot for educational purposes. Check the [project website](https://www.coderbot.org) for more information.
+
+This repository implements an update (and restore) system using OverlayFS.
 
 ## Overview
 
