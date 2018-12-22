@@ -11,6 +11,9 @@ rm *.tar
 mkdir -p sample_update/files/install/home/pi
 PI_INSTALL_PATH=$UPDATE_PATH/sample_update/files/install/home/pi
 
+echo "Copying pre folder"
+cp pre/* sample_update/files/install/ -r
+
 echo "Copying backend"
 cp $BACKEND $PI_INSTALL_PATH/coderbot -r
 rm -rf $PI_INSTALL_PATH/coderbot/lib
@@ -26,6 +29,6 @@ npm run build
 cp dist $PI_INSTALL_PATH/coderbot/ -r
 
 cd $UPDATE_PATH
-$CREATE_UPDATE sample_update sample_update ~/Downloads/coderbot.asc
+$CREATE_UPDATE sample_update sample_update ~/cb/files/coderbot.asc
 
 echo "Done"

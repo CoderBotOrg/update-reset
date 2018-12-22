@@ -15,6 +15,10 @@ Prepare the payload with:
 ./prepare
 ```
 
+If there are files in 'pre', they will be added to the update package and patched in `/`.
+
 (It will build and sign the package with: `create_update sample_update sample_update GPG-PRIVATE-KEY`)
 
 `sample_update.tar` will be produced.
+
+`update0.sh` prepares an update package patching the public key, signing with the old key.
