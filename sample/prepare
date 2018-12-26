@@ -16,6 +16,7 @@ cp pre/* sample_update/files/install/ -r
 
 echo "Copying backend"
 cp $BACKEND $PI_INSTALL_PATH/coderbot -r
+echo "Cleaning up virtualenv and git artifacts"
 rm -rf $PI_INSTALL_PATH/coderbot/lib
 rm -rf $PI_INSTALL_PATH/coderbot/__pycache__
 rm -rf $PI_INSTALL_PATH/coderbot/lib64
@@ -23,9 +24,10 @@ rm -rf $PI_INSTALL_PATH/coderbot/.git
 
 # TODO: generate backend metadata
 
-echo "Building and copying frontend"
+echo "Building frontend"
 cd $VUE_APP
 npm run build
+echo "Copying frontend"
 cp dist $PI_INSTALL_PATH/coderbot/ -r
 
 cd $UPDATE_PATH
