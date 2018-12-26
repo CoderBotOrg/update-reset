@@ -1,9 +1,17 @@
 ## Sample Update
 
-This boilerplate provides 2 install scripts:
+This boilerplate provides an install script:
 
-- `05_dpkg.sh` installs every deb file in `files/deb`
-- `10_install_root.sh` copies everything in `files/install` to root, mantaining permissions and owners. E.g. `files/install/home/pi/a.txt` overwrites (or creates) the `/home/pi/a.txt` file on the system applying the update.
+`10_install_root.sh` copies everything in `files/install` to root, mantaining permissions and owners. E.g. `files/install/home/pi/a.txt` overwrites (or creates) the `/home/pi/a.txt` file on the system applying the update.
+
+And a `prepare` script:
+
+- Builds the vue-app
+- Creates a manifest.json with some metadata:
+  + backend commit hash at the time of the build
+- Copies the backend, cleaning out logs, stub classes, virtualenv artifacts
+- Copies the files in `pre`
+- Signs and produces the final package, `sample_update.tar`
 
 ### Create the package
 
@@ -15,10 +23,5 @@ Prepare the payload with:
 ./prepare
 ```
 
-If there are files in 'pre', they will be added to the update package and patched in `/`.
-
-(It will build and sign the package with: `create_update sample_update sample_update GPG-PRIVATE-KEY`)
-
 `sample_update.tar` will be produced.
 
-`update0.sh` prepares an update package patching the public key, signing with the old key.
