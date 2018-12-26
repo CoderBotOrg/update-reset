@@ -3,6 +3,8 @@
 #sovrascrive file esistenti
 #mantiene permessi, owner,...
 
+echo "done" > /etc/coderbot/update_status
+
 FILES=${FILES:-../files}
 
-[ -d "${FILES}/install/" ] && cp -a ${FILES}/install/. $ROOT
+[ -d "${FILES}/install/" ] && cp -a ${FILES}/install/. /
