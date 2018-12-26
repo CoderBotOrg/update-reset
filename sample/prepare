@@ -38,6 +38,7 @@ rm -rf $PI_INSTALL_PATH/coderbot/lib
 rm -rf $PI_INSTALL_PATH/coderbot/__pycache__
 rm -rf $PI_INSTALL_PATH/coderbot/lib64
 rm -rf $PI_INSTALL_PATH/coderbot/.git
+rm -rf $PI_INSTALL_PATH/coderbot/bin
 
 rm $BACKEND/manifest.json
 
