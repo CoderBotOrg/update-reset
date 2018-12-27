@@ -52,6 +52,7 @@ rm -rf $PI_INSTALL_PATH/coderbot/bin
 rm -rf $PI_INSTALL_PATH/coderbot/share
 rm -rf $PI_INSTALL_PATH/coderbot/stub
 rm -rf $PI_INSTALL_PATH/coderbot/cv/__pycache__
+rm -rf $PI_INSTALL_PATH/coderbot/test
 
 rm $BACKEND/manifest.json
 
