@@ -31,21 +31,21 @@ TMPDIR="tmp_update/"
 
 INNER_NAME="update" #name of inner archive, tar_sig adds .tar.xz
 INNER_EXT=".tar.xz"
-
+TAR_SIG=/home/avivace/cb/update-reset/src/bin/tar_sig
 
 [ -d "$TMPDIR" ] && echo "WARNING: $TMPDIR already exists" || mkdir $TMPDIR
 
 #inner and signature
-echo "compressing and signing..."
-tar_sig ${TMPDIR}$INNER_NAME $BACKUP_DIR $DEF_KEY || fail "ERROR: could not create inner archive"
+echo "Compressing and signing..."
+$TAR_SIG ${TMPDIR}$INNER_NAME $BACKUP_DIR $DEF_KEY || fail "ERROR: could not create inner archive"
 
 #tar
-echo "archiving..."
+echo "Archiving..."
 tar cfv $FILENAME -C ${TMPDIR} ${INNER_NAME}${INNER_EXT} $SIGNAME || fail "ERROR: could not create outer archive"
 
 if $CLEAR
 then
-	echo "clearing..."
+	echo "Clearing..."
 	rm ${TMPDIR}${INNER_NAME}${INNER_EXT}
 	rm ${TMPDIR}$SIGNAME
 	rmdir ${TMPDIR}

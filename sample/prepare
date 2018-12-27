@@ -20,9 +20,8 @@ PI_INSTALL_PATH=$UPDATE_PATH/sample_update/files/install/home/pi
 cecho "Copying pre folder" $blue
 cp pre/. $UPDATE_PATH/sample_update/files/install/ -a
 
-
 cecho "Preparing CNN models" $blue
-./prepareCNN
+#./prepareCNN
 
 cecho "Copying pre_cnn folder" $blue
 cp pre_cnn/. $UPDATE_PATH/sample_update/files/install/ -a
@@ -52,6 +51,7 @@ rm -rf $PI_INSTALL_PATH/coderbot/.git
 rm -rf $PI_INSTALL_PATH/coderbot/bin
 rm -rf $PI_INSTALL_PATH/coderbot/share
 rm -rf $PI_INSTALL_PATH/coderbot/stub
+rm -rf $PI_INSTALL_PATH/coderbot/cv/__pycache__
 
 rm $BACKEND/manifest.json
 
