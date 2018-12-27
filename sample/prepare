@@ -1,20 +1,41 @@
 #!/bin/bash
+
+# Color
+source color
+
 VUE_APP=../../vue-app
 BACKEND=../../backend
 UPDATE_PATH=$PWD
 CREATE_UPDATE=../src/bin/create_update
 
-echo "Cleaning up"
+cecho "Cleaning up" $blue
+cecho "Cleaning up" $blue
+
+
 rm -rf sample_update/files
 rm -rf tmp_update
 rm *.tar
 mkdir -p sample_update/files/install/home/pi
 PI_INSTALL_PATH=$UPDATE_PATH/sample_update/files/install/home/pi
 
-echo "Copying pre folder"
-cp pre/* sample_update/files/install/ -r
 
-echo "Creating manifest file"
+cecho "Copying pre folder" $blue
+
+cp pre/. $UPDATE_PATH/sample_update/files/install/ -a
+
+
+cecho "Preparing CNN models" $blue
+
+./prepareCNN
+
+
+cecho "Copying pre_cnn folder" $blue
+
+cp pre_cnn/. $UPDATE_PATH/sample_update/files/install/ -a
+
+cecho "Creating manifest file" $blue
+
+
 
 cd $BACKEND
 
@@ -31,9 +52,12 @@ cat manifest.json
 
 cd $UPDATE_PATH
 
-echo "Copying backend"
-cp $BACKEND $PI_INSTALL_PATH/coderbot -r
-echo "Cleaning up virtualenv and git artifacts"
+cecho "Copying backend" $blue
+
+cp $BACKEND/. $PI_INSTALL_PATH/coderbot/ -a 
+
+cecho "Cleaning up virtualenv and git artifacts" $blue
+
 rm -rf $PI_INSTALL_PATH/coderbot/lib
 rm -rf $PI_INSTALL_PATH/coderbot/__pycache__
 rm -rf $PI_INSTALL_PATH/coderbot/lib64
@@ -42,15 +66,13 @@ rm -rf $PI_INSTALL_PATH/coderbot/bin
 
 rm $BACKEND/manifest.json
 
-# TODO: generate backend metadata
-
-echo "Building frontend"
+cecho "Building frontend" $blue
 cd $VUE_APP
 npm run build
-echo "Copying frontend"
+cecho "Copying frontend" $blue
 cp dist $PI_INSTALL_PATH/coderbot/ -r
 
 cd $UPDATE_PATH
 $CREATE_UPDATE sample_update sample_update ~/cb/files/coderbot.asc
 
-echo "Done"
+cecho "Done" $green

@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Based on https://github.com/CoderBotOrg/system-install/blob/master/download_mobilenet_models.sh
+# and
+# https://github.com/CoderBotOrg/system-install/blob/master/install_generic_cnn_models.sh
+
+# Color
+source color
+
+# download models
+cecho "Downloading models" $yellow
+
+CURDIR=$(pwd)
+rm -rf pre_cnn
+mkdir pre_cnn
+cd pre_cnn
+mkdir -p home/pi/coderbot/cnn_models/cache
+cd home/pi/coderbot/cnn_models/cache
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/download.tensorflow.org/models/mobilenet_v1_1.0_224_frozen.tgz
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/download.tensorflow.org/models/mobilenet_v1_0.25_224_frozen.tgz
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/download.tensorflow.org/models/mobilenet_v1_1.0_128_frozen.tgz
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/download.tensorflow.org/models/mobilenet_v1_0.25_128_frozen.tgz
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_1.0_224.tgz
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_1.0_128.tgz
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.35_224.tgz
+wget -nc --no-verbose --show-progress https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.35_128.tgz
+
+cd $CURDIR
+cd pre_cnn/home/pi/coderbot/cnn_models
+
+# install models
+cecho "Deflating models" $yellow
+
+mkdir tmp
+tar xf cache/mobilenet_v2_0.35_128.tgz -C ./tmp
+mv tmp/mobilenet_v2_0.35_128_frozen.pb generic_fast_low.pb
+tar xf cache/mobilenet_v2_1.0_224.tgz -C ./tmp
+mv tmp/mobilenet_v2_1.0_224_frozen.pb generic_slow_high.pb
+tar xf cache/mobilenet_v1_0.25_128_frozen.tgz -C ./tmp
+mv tmp/mobilenet_v1_0.25_128/labels.txt generic_fast_low.txt
+cp generic_fast_low.txt generic_slow_high.txt
+rm -rf tmp
+echo '{"generic_fast_low":{"status":1.0, "image_height": "128", "image_width":"128", "output_layer": "MobilenetV2/Predictions/Reshape_1"}, "generic_slow_high":{"status":1.0, "image_height":"224", "image_width": "224", "output_layer": "MobilenetV2/Predictions/Reshape_1"}}' > models.json
+
+cd $CURDIR

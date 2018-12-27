@@ -1,0 +1,26 @@
+#!/bin/bash
+
+## Color-echo 
+
+black='\E[30m'
+red='\E[31m'
+green='\E[32m'
+yellow='\E[33m'
+blue='\E[34m'
+magenta='\E[35m'
+cyan='\E[36m'
+white='\E[37m'
+
+cecho ()                     # Color-echo.
+                             # Argument $1 = message
+                             # Argument $2 = color
+{
+  local default_msg="No message passed."
+                               # Doesn't really need to be a local variable.
+
+  message=${1:-$default_msg}   # Defaults to default message.
+  color=${2:-$black}           # Defaults to black, if not specified.
+
+  echo -e "$color$message\E[39m"
+  return
+} 
