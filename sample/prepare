@@ -9,8 +9,6 @@ UPDATE_PATH=$PWD
 CREATE_UPDATE=../src/bin/create_update
 
 cecho "Cleaning up" $blue
-cecho "Cleaning up" $blue
-
 
 rm -rf sample_update/files
 rm -rf tmp_update
@@ -20,27 +18,18 @@ PI_INSTALL_PATH=$UPDATE_PATH/sample_update/files/install/home/pi
 
 
 cecho "Copying pre folder" $blue
-
 cp pre/. $UPDATE_PATH/sample_update/files/install/ -a
 
 
 cecho "Preparing CNN models" $blue
-
 ./prepareCNN
 
-
 cecho "Copying pre_cnn folder" $blue
-
 cp pre_cnn/. $UPDATE_PATH/sample_update/files/install/ -a
 
 cecho "Creating manifest file" $blue
-
-
-
 cd $BACKEND
-
 backendGIT=$(git rev-parse HEAD)
-
 cat >./manifest.json <<EOF
 {
   "backendCommit": "$backendGIT"
@@ -53,22 +42,23 @@ cat manifest.json
 cd $UPDATE_PATH
 
 cecho "Copying backend" $blue
-
 cp $BACKEND/. $PI_INSTALL_PATH/coderbot/ -a 
 
 cecho "Cleaning up virtualenv and git artifacts" $blue
-
 rm -rf $PI_INSTALL_PATH/coderbot/lib
 rm -rf $PI_INSTALL_PATH/coderbot/__pycache__
 rm -rf $PI_INSTALL_PATH/coderbot/lib64
 rm -rf $PI_INSTALL_PATH/coderbot/.git
 rm -rf $PI_INSTALL_PATH/coderbot/bin
+rm -rf $PI_INSTALL_PATH/coderbot/share
+rm -rf $PI_INSTALL_PATH/coderbot/stub
 
 rm $BACKEND/manifest.json
 
 cecho "Building frontend" $blue
 cd $VUE_APP
 npm run build
+
 cecho "Copying frontend" $blue
 cp dist $PI_INSTALL_PATH/coderbot/ -r
 
