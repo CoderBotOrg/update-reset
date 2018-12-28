@@ -122,11 +122,15 @@ if [ "$DOUPDATE" -eq 1 ]
 then
 	#do update
 	#merge first
-	merge_overlay && \
-	#backup_boot
+        echo "merging..." && \
+	merge_overlay $OVERMPOINT / && \
+        echo "merge done" && \
+        echo "backing up boot..." && \
 	backup_boot && \
-	#create new overlay
+        echo "backup boot done" && \
+        echo "recreating overlay..." && \
 	/sbin/create_overlay && \
+        echo "recreated overlay" && \
 	mountall
 fi
 
