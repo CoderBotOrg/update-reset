@@ -29,3 +29,4 @@ Prepare the payload with:
 
 - Check the folder structure in `install`. Remember that `[..]/update-reset/sample/sample_update/files/install/` is mapped to `/` on the Raspberry;
 - Check `/var/logs/coderbot_update.log` and `/var/logs/coderbot_update_last.log` on the Raspberry for the update_coderbot script logs;
+- The vue-app may be client-cached (see https://github.com/CoderBotOrg/backend/issues/108). A full refresh may be needed (CTRL+F5).
