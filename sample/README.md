@@ -25,3 +25,7 @@ Prepare the payload with:
 
 `sample_update.tar` will be produced.
 
+### Troubleshoot
+
+- Check the folder structure in `install`. Remember that `[..]/update-reset/sample/sample_update/files/install/` is mapped to `/` on the Raspberry;
+- Check `/var/logs/coderbot_update.log` and `/var/logs/coderbot_update_last.log` on the Raspberry for the update_coderbot script logs;
