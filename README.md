@@ -140,3 +140,7 @@ sudo make desktop-uninstall DESTDIR=.
 
 ### TODO
 apt shouldn't update /boot/cmdline.txt
+
+### Further references
+
+This work is also described in this [thesis](https://gitlab.com/rpo254/texis/-/blob/master/Tesi.pdf) (Italian only)
