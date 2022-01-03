@@ -14,6 +14,8 @@ fail() {
 	exit 2
 }
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 (( $# < 3)) || [[ $1 == "-h" || $1 == "--help" ]] && usage
 
 BACKUP_DIR=${2:-.}
@@ -31,7 +33,7 @@ TMPDIR="tmp_update/"
 
 INNER_NAME="update" #name of inner archive, tar_sig adds .tar.xz
 INNER_EXT=".tar.xz"
-TAR_SIG=/home/avivace/cb/update-reset/src/bin/tar_sig
+TAR_SIG=$SCRIPT_DIR/tar_sig
 
 [ -d "$TMPDIR" ] && echo "WARNING: $TMPDIR already exists" || mkdir $TMPDIR
 
